@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "dtek-shedule-send-tg": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
