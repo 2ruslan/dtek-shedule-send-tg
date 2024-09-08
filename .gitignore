@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/DtekSheduleSendTg/app.config
+/DtekSheduleSendTg/Chats/ChatInfo.json
