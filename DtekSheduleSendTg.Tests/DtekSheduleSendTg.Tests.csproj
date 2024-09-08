@@ -31,6 +31,9 @@
     <None Update="DtekSheduleTest\TestData\fileB.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SiteAnalyzerTest\SiteSource\SourceNoPowerOff.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

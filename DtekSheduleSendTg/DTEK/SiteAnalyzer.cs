@@ -1,27 +1,22 @@
 ﻿using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.Data.TextInfo;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.RegularExpressions;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class SiteAnalyzer(ILogger logger, TextInfoRepository repository) : ISiteAnalyzer
+    public class SiteAnalyzer(ILogger logger, ITextInfoRepository repository, ISiteSource siteSource) : ISiteAnalyzer
     {
-        const string site = "https://www.dtek-krem.com.ua";
-
         public ISiteAnalyzerResult Analyze()
         {
             logger.LogInformation("Start Analyze");
 
-            using WebClient client = new();
-
-            string source = GetSiteSource(client, $"{site}/ua/shutdowns");
+            string source = siteSource.GetSource();
 
             var pictureUrl = GetPictureUrl(source);
             if (!string.IsNullOrEmpty(pictureUrl))
             {
-                var fileName = StorePicFromUrl(client, pictureUrl);
+                var fileName = siteSource.StorePicFromUrl(pictureUrl);
                 return new SiteAnalyzerPictureResult() { PIctureFile = fileName };
             }
 
@@ -34,9 +29,6 @@ namespace DtekSheduleSendTg.DTEK
             return null;
         }
 
-        private string GetSiteSource(WebClient client, string url)
-            => client.DownloadString(url);
-      
         private string GetPictureUrl(string source)
         {
             logger.LogInformation("Start GetPictureUrl");
@@ -49,7 +41,7 @@ namespace DtekSheduleSendTg.DTEK
                 if (posEnd < posStart)
                     return string.Empty;
 
-                var url = $"{site}{source.Substring(posStart, posEnd - posStart)}";
+                var url = source.Substring(posStart, posEnd - posStart);
 
                 logger.LogInformation("GetPictureUrl : {0}", url);
 
@@ -63,45 +55,6 @@ namespace DtekSheduleSendTg.DTEK
             logger.LogInformation("end GetPictureUrl");
 
             return string.Empty;
-        }
-
-        private string StorePicFromUrl(WebClient client, string url)
-        {
-            logger.LogInformation("Start StorePicFromUrl");
-
-            var fileName = url.Split('/').LastOrDefault();
-
-            if (string.IsNullOrEmpty(fileName))
-                return string.Empty;
-
-            var dir = Path.Combine(Environment.CurrentDirectory, "pict");
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
-            fileName = Path.Combine(dir, fileName);
-
-            if (File.Exists(fileName))
-            {
-                logger.LogInformation("File exists {0}", fileName);
-                return string.Empty;
-            }
-
-            try
-            {
-                logger.LogInformation("Try Download {0} to file {1}", url, fileName);
-                client.DownloadFile(url, fileName);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "DownloadFile");
-                return string.Empty;
-            }
-
-            logger.LogInformation("StorePicFromUrl file : {0}", fileName);
-
-            logger.LogInformation("End StorePicFromUrl");
-
-            return fileName;
         }
 
         private string GetInfoText(string source)
@@ -123,7 +76,12 @@ namespace DtekSheduleSendTg.DTEK
                             return string.Empty;
 
                         repository.StoreLastInfoMessage(m.Value);
-                        return textInfo.Message;
+
+                        var message = textInfo.Message != "*" 
+                            ? textInfo.Message
+                            : Regex.Replace(m.Value, "<.*?>", String.Empty);
+
+                        return message;
                     }
                 }
             }

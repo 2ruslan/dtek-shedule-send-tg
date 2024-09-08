@@ -1,4 +1,5 @@
-﻿using DtekSheduleSendTg.Data.ChatInfo;
+﻿using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Data.ChatInfo;
 using DtekSheduleSendTg.Data.Shedule;
 using DtekSheduleSendTg.Data.TextInfo;
 using DtekSheduleSendTg.DTEK;
@@ -26,7 +27,9 @@ namespace DtekSheduleSendTg
             var sheduleRepository = new SheduleRepository();
             var textInfoRepository = new TextInfoRepository();
 
-            var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository);
+            var siteSource = new SiteSource(logger);
+
+            var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource);
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger, sheduleRepository);
 
