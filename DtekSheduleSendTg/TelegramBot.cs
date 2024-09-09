@@ -1,4 +1,5 @@
 ﻿using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Common;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -25,9 +26,9 @@ namespace DtekSheduleSendTg
                 Thread.Sleep(WAIT_BEFORE_SEND_TEXT * 1000);
 
                 var result = bot.SendTextMessageAsync(chatId,
-                                                       message,
-                                                       disableNotification: true//,
-                                                //       parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2
+                                                       message.DeleteHtmlTags(),
+                                                       disableNotification: true,
+                                                       parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
                 ).Result;
 
                 logger.LogInformation("Sended to {0} {1}", chatId, result.Date);
@@ -62,9 +63,9 @@ namespace DtekSheduleSendTg
 
                 var result = bot.SendPhotoAsync(chatId,
                                                 inputFile,
-                                                caption: description,
-                                                disableNotification: true//,
-                                                //parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2
+                                                caption: description.DeleteHtmlTags(),
+                                                disableNotification: true,
+                                                parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
                                                 ).Result;
 
                 fileInfo[fileName] = result.Photo.FirstOrDefault()?.FileId;

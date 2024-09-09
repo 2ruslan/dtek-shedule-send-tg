@@ -1,4 +1,5 @@
 ﻿using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Common;
 using DtekSheduleSendTg.Data.Shedule;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
@@ -41,7 +42,7 @@ namespace DtekSheduleSendTg
             {
                 sb.AppendLine();
                 sb.AppendLine("Відключення:");
-                sb.Append(description);
+                sb.Append(description.MarkBold());
             }
             
             return sb.ToString();

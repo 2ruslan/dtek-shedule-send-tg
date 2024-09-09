@@ -41,7 +41,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
 
             var textResult = analyzeResult as SiteAnalyzerTextResult;
 
-            Assert.Contains("За наказом НЕК Укренерго стабілізаційні відключення на 8 вересня не заплановані.", textResult?.Text);
+            Assert.Contains("За наказом НЕК Укренерго стабілізаційні відключення на 8 вересня<strong> не заплановані</strong>.", textResult?.Text);
         }
     }
 }

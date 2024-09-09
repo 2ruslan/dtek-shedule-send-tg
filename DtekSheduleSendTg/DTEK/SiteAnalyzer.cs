@@ -81,9 +81,6 @@ namespace DtekSheduleSendTg.DTEK
                         var message = textInfo.Message != "*"
                             ? textInfo.Message
                             : m.Value
-                                //      .Html2Markdown()
-                                .DeleteHtmlTags()
-                           //     .PrepateAsMarkdown();
                            ;
 
                         return message;
