@@ -1,4 +1,5 @@
 ﻿using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Common;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -77,9 +78,13 @@ namespace DtekSheduleSendTg.DTEK
 
                         repository.StoreLastInfoMessage(m.Value);
 
-                        var message = textInfo.Message != "*" 
+                        var message = textInfo.Message != "*"
                             ? textInfo.Message
-                            : Regex.Replace(m.Value, "<.*?>", String.Empty);
+                            : m.Value
+                                //      .Html2Markdown()
+                                .DeleteHtmlTags()
+                           //     .PrepateAsMarkdown();
+                           ;
 
                         return message;
                     }

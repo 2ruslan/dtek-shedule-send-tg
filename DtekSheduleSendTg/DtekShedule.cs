@@ -43,7 +43,7 @@ namespace DtekSheduleSendTg
                 sb.AppendLine("Відключення:");
                 sb.Append(description);
             }
-
+            
             return sb.ToString();
         }
 
@@ -67,7 +67,7 @@ namespace DtekSheduleSendTg
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogError(ex, "GetNoSendSheduleGroup");
             }
 
             return result;
@@ -104,13 +104,16 @@ namespace DtekSheduleSendTg
                     if (isOpenD)
                         sb.AppendLine("24");
 
+                    if (sb.Length == 0)
+                        sb.Append("    - не планується");
+
                     result.Add(new SheduleData() { Group = sheduleCurrent.Group, SheduleString = sb.ToString() });
                 }
 
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogError(ex, "GetSheduleDescription");
             }
             return result;
         }
@@ -142,7 +145,7 @@ namespace DtekSheduleSendTg
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message);
+                logger.LogError(ex, "GetShedulesFromFile");
             }
 
             return result;

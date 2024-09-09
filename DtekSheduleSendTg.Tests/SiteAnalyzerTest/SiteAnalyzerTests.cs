@@ -17,7 +17,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
             {
                 new TextInfo ()
                 {
-                    Regex =  @"(За наказом НЕК Укренерго стабілізаційні відключення).+?(не заплановані)",
+                    Regex =  @"(За наказом НЕК Укренерго стабілізаційні відключення).+?(не заплановані).+?(\.)",
                     Message = "*"
                 }
             };
@@ -41,7 +41,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
 
             var textResult = analyzeResult as SiteAnalyzerTextResult;
 
-            Assert.Contains("За наказом НЕК Укренерго стабілізаційні відключення на 8 вересня не заплановані", textResult.Text);
+            Assert.Contains("За наказом НЕК Укренерго стабілізаційні відключення на 8 вересня не заплановані.", textResult?.Text);
         }
     }
 }

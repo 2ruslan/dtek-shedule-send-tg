@@ -1,5 +1,4 @@
-﻿using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.Data.ChatInfo;
+﻿using DtekSheduleSendTg.Data.ChatInfo;
 using DtekSheduleSendTg.Data.Shedule;
 using DtekSheduleSendTg.Data.TextInfo;
 using DtekSheduleSendTg.DTEK;

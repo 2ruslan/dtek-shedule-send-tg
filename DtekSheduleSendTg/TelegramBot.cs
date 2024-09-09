@@ -7,6 +7,9 @@ namespace DtekSheduleSendTg
 {
     public class TelegramBot(ILogger logger, string botToken) : ITelegramBot
     {
+        private const int WAIT_BEFORE_SEND_TEXT = 1;
+        private const int WAIT_BEFORE_SEND_PICTURE = 3;
+
         private readonly TelegramBotClient bot = new TelegramBotClient(botToken);
 
         private readonly Dictionary<string, string> fileInfo= new();
@@ -19,9 +22,12 @@ namespace DtekSheduleSendTg
             {
                 logger.LogInformation("Try Send {0} to {1}", message, chatId);
 
+                Thread.Sleep(WAIT_BEFORE_SEND_TEXT * 1000);
+
                 var result = bot.SendTextMessageAsync(chatId,
                                                        message,
-                                                       disableNotification: true
+                                                       disableNotification: true//,
+                                                //       parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2
                 ).Result;
 
                 logger.LogInformation("Sended to {0} {1}", chatId, result.Date);
@@ -52,10 +58,13 @@ namespace DtekSheduleSendTg
                     ? InputFile.FromStream(System.IO.File.OpenRead(fileName))
                     : InputFile.FromFileId(fileId);
 
+                Thread.Sleep(WAIT_BEFORE_SEND_PICTURE * 1000);
+
                 var result = bot.SendPhotoAsync(chatId,
                                                 inputFile,
                                                 caption: description,
-                                                disableNotification: true
+                                                disableNotification: true//,
+                                                //parseMode: Telegram.Bot.Types.Enums.ParseMode.MarkdownV2
                                                 ).Result;
 
                 fileInfo[fileName] = result.Photo.FirstOrDefault()?.FileId;
