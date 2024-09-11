@@ -1,7 +1,5 @@
 ﻿using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.Common;
 using Microsoft.Extensions.Logging;
-using System.Net;
 using System.Text.RegularExpressions;
 
 namespace DtekSheduleSendTg.DTEK

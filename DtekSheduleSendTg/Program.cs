@@ -9,24 +9,26 @@ namespace DtekSheduleSendTg
 {
     public static class Program
     {
+        private static ILogger logger = LoggerFactory
+                                            .Create(builder => builder
+                                                            .AddConsole()
+                                                            .AddFile("app.log", append: true)
+                                            ).CreateLogger("DtekSheduleSendTg");
+        static Program()
+            => AppDomain.CurrentDomain.UnhandledException += UnhandledException;
+
         private static void Main(string[] args)
         {
-            using ILoggerFactory factory = LoggerFactory.Create(
-                    builder => builder
-                                    .AddConsole()
-                                    .AddFile("app.log", append: true)
-                    );
-            var logger = factory.CreateLogger("DtekSheduleSendTg");
-
             logger.LogInformation("-------------------{0}--------------------", DateTime.Now.ToString());
 
             var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"]; 
+            var site = System.Configuration.ConfigurationManager.AppSettings["Site"];
 
             var chatInfoRepository = new ChatInfoRepository();
             var sheduleRepository = new SheduleRepository();
             var textInfoRepository = new TextInfoRepository();
 
-            var siteSource = new SiteSource(logger);
+            var siteSource = new SiteSource(logger, site);
 
             var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource);
             var bot = new TelegramBot(logger, botToken);
@@ -38,5 +40,8 @@ namespace DtekSheduleSendTg
 
             logger.LogInformation("  ");
         }
+
+        private static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
+             => logger.LogError("UnhandledException : {0}", e);
     }
 }

@@ -4,10 +4,8 @@ using System.Net;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class SiteSource(ILogger logger) : ISiteSource
+    public class SiteSource(ILogger logger, string site) : ISiteSource
     {
-        const string site = "https://www.dtek-krem.com.ua";
-
         public string GetSource()
         {
             logger.LogInformation("Start Get site source");
