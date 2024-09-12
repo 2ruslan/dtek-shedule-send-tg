@@ -16,6 +16,9 @@ namespace DtekSheduleSendTg.DTEK
             if (!string.IsNullOrEmpty(pictureUrl))
             {
                 var fileName = siteSource.StorePicFromUrl(pictureUrl);
+                if (string.IsNullOrEmpty(fileName))
+                    return null;
+
                 return new SiteAnalyzerPictureResult() { PIctureFile = fileName };
             }
 
@@ -62,6 +65,7 @@ namespace DtekSheduleSendTg.DTEK
 
             var infoTexts = repository.GetTextInfo();
             var lastMessage = repository.GetLastInfoMessage();
+            logger.LogInformation("GetInfoText lastMessage : [{0}]", lastMessage);
 
             try
             {
@@ -71,6 +75,8 @@ namespace DtekSheduleSendTg.DTEK
 
                     if (m != null)
                     {
+                        logger.LogInformation("GetInfoText currentMessage : [{0}]", m.Value);
+
                         if (string.Equals(m.Value, lastMessage, StringComparison.InvariantCultureIgnoreCase))
                             return string.Empty;
 

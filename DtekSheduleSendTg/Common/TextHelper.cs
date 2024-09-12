@@ -17,7 +17,8 @@ namespace DtekSheduleSendTg.Common
                  str = str.Replace(match.Value, string.Empty);
             }
 
-            return str;
+            return str
+                    .Replace("&nbsp;", " ");
         }
 
         public static string MarkBold(this string str)
