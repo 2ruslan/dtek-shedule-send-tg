@@ -34,7 +34,13 @@
     <None Update="SiteAnalyzerTest\SiteSource\SourceNoPowerOff.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="SiteAnalyzerTest\SiteSource\SourceNoPowerOff_v2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="SiteAnalyzerTest\SiteSource\SourcePowerOffNoPict.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="SiteAnalyzerTest\SiteSource\SourcePowerOffWithPict.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

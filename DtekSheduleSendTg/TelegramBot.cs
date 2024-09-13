@@ -24,12 +24,28 @@ namespace DtekSheduleSendTg
                 logger.LogInformation("Try Send {0} to {1}", message, chatId);
 
                 Thread.Sleep(WAIT_BEFORE_SEND_TEXT * 1000);
+                Message result;
+                try
+                {
+                    // try send as html
+                    logger.LogInformation("Try Send as html [{0}]", message);
 
-                var result = bot.SendTextMessageAsync(chatId,
-                                                       message.DeleteHtmlTags(),
+                    result = bot.SendTextMessageAsync(chatId,
+                                                       message.FixHtml2Telegram(),
                                                        disableNotification: true,
                                                        parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
-                ).Result;
+                                ).Result;
+                }
+                catch {
+                    // try send as text
+                    logger.LogInformation("Try Send as text [{0}]", message);
+
+                    result = bot.SendTextMessageAsync(chatId,
+                                                         message.DeleteAllTags(),
+                                                         disableNotification:true
+                                  ).Result;
+                }
+
 
                 logger.LogInformation("Sended to {0} {1}", chatId, result.Date);
             }
@@ -60,13 +76,30 @@ namespace DtekSheduleSendTg
                     : InputFile.FromFileId(fileId);
 
                 Thread.Sleep(WAIT_BEFORE_SEND_PICTURE * 1000);
+                Message result;
+                try
+                {
+                    // try send caption as html
+                    logger.LogInformation("Try Send as html [{0}]", description);
 
-                var result = bot.SendPhotoAsync(chatId,
-                                                inputFile,
-                                                caption: description.DeleteHtmlTags(),
-                                                disableNotification: true,
-                                                parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
-                                                ).Result;
+                    result = bot.SendPhotoAsync(chatId,
+                                                    inputFile,
+                                                    caption: description.FixHtml2Telegram(),
+                                                    disableNotification: true,
+                                                    parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
+                                                    ).Result;
+                }
+                catch
+                {
+                    // try send caption as text
+                    logger.LogInformation("Try Send as text [{0}]", description);
+
+                    result = bot.SendPhotoAsync(chatId,
+                                                    inputFile,
+                                                    caption: description.DeleteAllTags(),
+                                                    disableNotification: true
+                                                    ).Result;
+                }
 
                 fileInfo[fileName] = result.Photo.FirstOrDefault()?.FileId;
 
