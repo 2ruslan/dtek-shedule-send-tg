@@ -23,6 +23,7 @@ namespace DtekSheduleSendTg
 
             var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"]; 
             var site = System.Configuration.ConfigurationManager.AppSettings["Site"];
+            var shedilePicRegex = System.Configuration.ConfigurationManager.AppSettings["ShedilePicRegex"]; 
 
             var chatInfoRepository = new ChatInfoRepository();
             var sheduleRepository = new SheduleRepository();
@@ -30,7 +31,7 @@ namespace DtekSheduleSendTg
 
             var siteSource = new SiteSource(logger, site);
 
-            var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource);
+            var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource, shedilePicRegex);
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger, sheduleRepository);
 

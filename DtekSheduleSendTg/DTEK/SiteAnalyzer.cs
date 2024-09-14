@@ -1,10 +1,14 @@
 ﻿using DtekSheduleSendTg.Abstraction;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Text.RegularExpressions;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class SiteAnalyzer(ILogger logger, ITextInfoRepository repository, ISiteSource siteSource) : ISiteAnalyzer
+    public class SiteAnalyzer(  ILogger logger, 
+                                ITextInfoRepository repository, 
+                                ISiteSource siteSource, 
+                                string shedilePicRegex) : ISiteAnalyzer
     {
         public ISiteAnalyzerResult Analyze()
         {
@@ -35,23 +39,13 @@ namespace DtekSheduleSendTg.DTEK
         {
             logger.LogInformation("Start GetPictureUrl");
 
-            try
+            var m = Regex.Match(source, shedilePicRegex); 
+
+            if (m != null)
             {
-                var posStart = source.IndexOf("<img src=\"/media/page/pag") + 10;
-                var posEnd = source.IndexOf(".jpg", posStart) + 4;
+                logger.LogInformation("GetPictureUrl : {0}", m.Value);
 
-                if (posEnd < posStart)
-                    return string.Empty;
-
-                var url = source.Substring(posStart, posEnd - posStart);
-
-                logger.LogInformation("GetPictureUrl : {0}", url);
-
-                return url;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "GetPictureUrl");
+                return m.Value;
             }
 
             logger.LogInformation("end GetPictureUrl");

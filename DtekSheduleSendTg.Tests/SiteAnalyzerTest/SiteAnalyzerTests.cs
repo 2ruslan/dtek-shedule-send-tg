@@ -2,7 +2,6 @@
 using DtekSheduleSendTg.Data.TextInfo;
 using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
 {
@@ -56,7 +55,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
             var siteSource = new Mock<ISiteSource>();
             siteSource.Setup(x => x.GetSource()).Returns(File.ReadAllText(fileSite));
 
-            var siteAnalyzer = new SiteAnalyzer(logger.Object, repo.Object, siteSource.Object);
+            var siteAnalyzer = new SiteAnalyzer(logger.Object, repo.Object, siteSource.Object, string.Empty);
 
             // Act
             var analyzeResult = siteAnalyzer.Analyze();
@@ -74,6 +73,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
         public void AnalyzeGetPict()
         {
             var fileSite = Path.Combine(Environment.CurrentDirectory, "SiteAnalyzerTest", "SiteSource", "SourcePowerOffWithPict.txt");
+            var shedulePic = @"(/media/page/page-chart-).+?(.jpg)";
 
             var logger = new Mock<ILogger>();
 
@@ -83,7 +83,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
             siteSource.Setup(x => x.GetSource()).Returns(File.ReadAllText(fileSite));
             siteSource.Setup(x => x.StorePicFromUrl(It.IsAny<string>())).Returns<string>(x=> x);
 
-            var siteAnalyzer = new SiteAnalyzer(logger.Object, repo.Object, siteSource.Object);
+            var siteAnalyzer = new SiteAnalyzer(logger.Object, repo.Object, siteSource.Object, shedulePic);
 
             // Act
             var analyzeResult = siteAnalyzer.Analyze();
@@ -93,7 +93,7 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
 
             var pictResult = analyzeResult as SiteAnalyzerPictureResult;
 
-            Assert.Contains(@"/media/page/page-chart-8670-1050.jpg", pictResult?.PIctureFile);
+            Assert.Equal(@"/media/page/page-chart-8670-1050.jpg", pictResult?.PIctureFile);
         }
     }
 }
