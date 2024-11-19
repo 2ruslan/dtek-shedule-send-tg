@@ -11,17 +11,17 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
         {
 #pragma warning disable S1144 // Unused private types or members should be removed
             public AnalyzeTestRegexTestData() {
-                Add(new Object[] {
+                Add(new [] {
                     Path.Combine(Environment.CurrentDirectory, "SiteAnalyzerTest", "SiteSource", "SourceNoPowerOff.txt"),
                     "За наказом НЕК Укренерго стабілізаційні відключення на 8 вересня<strong> не заплановані</strong>.",
                     @"(За наказом НЕК Укренерго).+?(\.)"
                     });
-                Add(new Object[] {
+                Add(new [] {
                     Path.Combine(Environment.CurrentDirectory, "SiteAnalyzerTest", "SiteSource", "SourcePowerOffNoPict.txt"),
                     "За наказом НЕК Укренерго <strong>сьогодні з 13:00 до 23:00</strong> будуть діяти <strong>стабілізаційні відключення</strong> електроенергії." ,
                     @"(За наказом НЕК Укренерго).+?(\.)"
                     });
-                Add(new Object[] {
+                Add(new [] {
                     Path.Combine(Environment.CurrentDirectory, "SiteAnalyzerTest", "SiteSource", "SourceNoPowerOff_v2.txt"),
                     "За наказом НЕК Укренерго стабілізаційні відключення на 13 вересня <strong>не заплановані." ,
                     @"(За наказом НЕК Укренерго).+?(\.)"
@@ -89,9 +89,9 @@ namespace DtekSheduleSendTg.Tests.SiteAnalyzerTest
             var analyzeResult = siteAnalyzer.Analyze();
 
             // Assert
-            Assert.IsType<SiteAnalyzerPictureResult>(analyzeResult);
+            Assert.IsType<SiteAnalyzerResult>(analyzeResult);
 
-            var pictResult = analyzeResult as SiteAnalyzerPictureResult;
+            var pictResult = analyzeResult as SiteAnalyzerResult;
 
             Assert.Equal(@"/media/page/page-chart-8670-1050.jpg", pictResult?.PIctureFile);
         }

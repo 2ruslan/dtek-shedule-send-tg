@@ -19,13 +19,12 @@ namespace DtekSheduleSendTg
 
             var siteInfo = siteAnalyzer.Analyze();
 
-            if (siteInfo is SiteAnalyzerPictureResult siteAnalyzerPictureResult)
-                SendPicture(siteAnalyzerPictureResult.PIctureFile);
-            else if (siteInfo is SiteAnalyzerTextResult siteAnalyzerTextResult)
-                SendText(siteAnalyzerTextResult.Text);
-            else
-                logger.LogInformation("no info");
+            if (!string.IsNullOrEmpty(siteInfo.Text))
+                SendText(siteInfo.Text);
 
+            if (!string.IsNullOrEmpty(siteInfo.PIctureFile))
+                SendPicture(siteInfo.PIctureFile);
+            
             logger.LogInformation("End CheckAndSend");
         }
 

@@ -7,12 +7,21 @@ namespace DtekSheduleSendTg.DTEK
     public class SiteSource(ILogger logger, string site) : ISiteSource
     {
         public string GetSource()
+            => GetSource(0);
+
+        public string GetSource(int attempt)
         {
             logger.LogInformation("Start Get site source");
 
-            using WebClient client = new();
+            HttpClient httpClient = new(new RedirectHandler(new HttpClientHandler()));
 
-            string source = client.DownloadString($"{site}/ua/shutdowns");
+            var source = httpClient.GetStringAsync($"{site}/ua/shutdowns").Result;
+
+            if (source.Contains("Request unsuccessful.") && attempt < 5) 
+            {
+                Thread.Sleep(10000);
+                return GetSource(++attempt);
+            }
 
             logger.LogInformation("End Get site source");
 
@@ -63,5 +72,23 @@ namespace DtekSheduleSendTg.DTEK
             return fileName;
         }
 
+    }
+
+    public class RedirectHandler : DelegatingHandler
+    {
+        public RedirectHandler(HttpMessageHandler innerHandler) => InnerHandler = innerHandler;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var responseMessage = await base.SendAsync(request, cancellationToken);
+
+            if (responseMessage is { StatusCode: HttpStatusCode.Redirect, Headers: { Location: { } } })
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, responseMessage.Headers.Location);
+                responseMessage = await base.SendAsync(request, cancellationToken);
+            }
+
+            return responseMessage;
+        }
     }
 }

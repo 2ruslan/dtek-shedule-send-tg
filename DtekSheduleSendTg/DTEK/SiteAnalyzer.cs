@@ -10,42 +10,40 @@ namespace DtekSheduleSendTg.DTEK
                                 ISiteSource siteSource, 
                                 string shedilePicRegex) : ISiteAnalyzer
     {
-        public ISiteAnalyzerResult Analyze()
+        public SiteAnalyzerResult Analyze()
         {
             logger.LogInformation("Start Analyze");
 
+            var result = new SiteAnalyzerResult();
+
             string source = siteSource.GetSource();
+
+            var info = GetInfoText(source);
+            if (!string.IsNullOrEmpty(info))
+                result.Text = info;
 
             var pictureUrl = GetPictureUrl(source);
             if (!string.IsNullOrEmpty(pictureUrl))
             {
                 var fileName = siteSource.StorePicFromUrl(pictureUrl);
-                if (string.IsNullOrEmpty(fileName))
-                    return null;
-
-                return new SiteAnalyzerPictureResult() { PIctureFile = fileName };
+                if (!string.IsNullOrEmpty(fileName))
+                    result.PIctureFile = fileName;
             }
 
-            var info = GetInfoText(source);
-            if (!string.IsNullOrEmpty(info))
-            {
-                return new SiteAnalyzerTextResult() { Text = info};
-            }
-            
-            return null;
+            return result;
         }
 
         private string GetPictureUrl(string source)
         {
             logger.LogInformation("Start GetPictureUrl");
 
-            var m = Regex.Match(source, shedilePicRegex); 
+            var m = Regex.Matches(source, shedilePicRegex); 
 
             if (m != null)
             {
-                logger.LogInformation("GetPictureUrl : {0}", m.Value);
-
-                return m.Value;
+                logger.LogInformation("GetPictureUrl : {0}", m[^1].Value);
+                
+                return m[^1].Value;
             }
 
             logger.LogInformation("end GetPictureUrl");
@@ -71,9 +69,12 @@ namespace DtekSheduleSendTg.DTEK
                     {
                         logger.LogInformation("GetInfoText currentMessage : [{0}]", m.Value);
 
-                        if (string.Equals(m.Value, lastMessage, StringComparison.InvariantCultureIgnoreCase))
+                        if (string.IsNullOrEmpty(m.Value))
                             return string.Empty;
 
+                        if (string.Equals(m.Value, lastMessage, StringComparison.InvariantCultureIgnoreCase))
+                            return string.Empty;
+                                                
                         repository.StoreLastInfoMessage(m.Value);
 
                         var message = textInfo.Message != "*"

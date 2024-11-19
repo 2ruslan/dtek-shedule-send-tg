@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DtekSheduleSendTg", "DtekSheduleSendTg\DtekSheduleSendTg.csproj", "{99BE0CC2-3B55-4165-A9EC-166BE68BA0AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtekSheduleSendTg.Tests", "DtekSheduleSendTg.Tests\DtekSheduleSendTg.Tests.csproj", "{63810CFB-7342-4525-8CA1-EFF40CD7052B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DtekSheduleSendTg.Tests", "DtekSheduleSendTg.Tests\DtekSheduleSendTg.Tests.csproj", "{63810CFB-7342-4525-8CA1-EFF40CD7052B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

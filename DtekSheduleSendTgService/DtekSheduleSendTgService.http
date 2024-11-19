@@ -1,0 +1,6 @@
+@DtekSheduleSendTgService_HostAddress = http://localhost:5197
+
+GET {{DtekSheduleSendTgService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

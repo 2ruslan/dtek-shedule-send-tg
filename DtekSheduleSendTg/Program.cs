@@ -23,7 +23,17 @@ namespace DtekSheduleSendTg
 
             var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"]; 
             var site = System.Configuration.ConfigurationManager.AppSettings["Site"];
-            var shedilePicRegex = System.Configuration.ConfigurationManager.AppSettings["ShedilePicRegex"]; 
+            var shedilePicRegex = System.Configuration.ConfigurationManager.AppSettings["ShedilePicRegex"];
+
+            var dtekShedulesFromFilePrarms = new DtekShedulesFromFilePrarms()
+            { 
+                GroupStart  = int.Parse(System.Configuration.ConfigurationManager.AppSettings["GroupStart"]),
+                GroupEnd    = int.Parse(System.Configuration.ConfigurationManager.AppSettings["GroupEnd"]),
+                GroupStep   = int.Parse(System.Configuration.ConfigurationManager.AppSettings["GroupStep"]),
+                TimeStart   = int.Parse(System.Configuration.ConfigurationManager.AppSettings["TimeStart"]),
+                TimeEnd     = int.Parse(System.Configuration.ConfigurationManager.AppSettings["TimeEnd"]),
+                TimeStep    = int.Parse(System.Configuration.ConfigurationManager.AppSettings["TimeStep"]),
+            };
 
             var chatInfoRepository = new ChatInfoRepository();
             var sheduleRepository = new SheduleRepository();
@@ -33,7 +43,7 @@ namespace DtekSheduleSendTg
 
             var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource, shedilePicRegex);
             var bot = new TelegramBot(logger, botToken);
-            var dtekShedule = new DtekShedule(logger, sheduleRepository);
+            var dtekShedule = new DtekShedule(logger, sheduleRepository, dtekShedulesFromFilePrarms);
 
             var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository);
 

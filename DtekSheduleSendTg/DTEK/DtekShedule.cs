@@ -6,15 +6,15 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Text;
 
-namespace DtekSheduleSendTg
+namespace DtekSheduleSendTg.DTEK
 {
-    public class DtekShedule(ILogger logger, ISheduleRepository repository) : IDtekShedule
+    public class DtekShedule(ILogger logger, ISheduleRepository repository
+        ,DtekShedulesFromFilePrarms pictDim) : IDtekShedule
     {
         private readonly Rgba32 ColorWhite = new Rgba32(255, 255, 255, 255);
 
         private IEnumerable<int> noSendSheduleGroup;
         private IEnumerable<SheduleData> sheduleGroupDescription;
-
 
         public bool AnalyzeFile(string file)
         {
@@ -44,7 +44,7 @@ namespace DtekSheduleSendTg
                 sb.AppendLine("Відключення:");
                 sb.Append(description.MarkBold());
             }
-            
+
             return sb.ToString();
         }
 
@@ -131,16 +131,18 @@ namespace DtekSheduleSendTg
 
                 int group = 1;
 
-                for (int g = 240; g < 490; g += 45)
+                for (int g = pictDim.GroupStart; g < pictDim.GroupEnd; g += pictDim.GroupStep)
                 {
                     var sb = new StringBuilder();
 
-                    for (int t = 164; t < 1000; t += 36)
+                    for (int t = pictDim.TimeStart; t < pictDim.TimeEnd; t += pictDim.TimeStep)
                     {
-                        var colot = img[t, g];
-                        sb.Append(colot == ColorWhite ? "1" : "0");
-                    }
+                        int average = GetAverage(img, t, g);
+                        Console.WriteLine(g);
 
+                        sb.Append(average > 240 ? "1" : "0");
+                    }
+                    Console.WriteLine("--");
                     result.Add(new SheduleData() { Group = group++, SheduleString = sb.ToString() });
                 }
             }
@@ -150,6 +152,24 @@ namespace DtekSheduleSendTg
             }
 
             return result;
+        }
+
+        private static int GetAverage(Image<Rgba32> img, int t, int g)
+        {
+            double average = 0;
+
+            var tm = new int[] {t - 1, t, t + 1};
+            var gm = new int[] {g - 1, g, g + 1 };
+
+            foreach (var tp in tm)
+                foreach (var gp in gm)
+                {
+                    var colorPixel = img[tp, gp];
+                    average += (((colorPixel.R + colorPixel.B + colorPixel.G) / 3.0) / 9.0);
+                }
+
+            
+            return (int)average;
         }
     }
 }

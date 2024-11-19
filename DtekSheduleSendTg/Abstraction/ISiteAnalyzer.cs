@@ -1,7 +1,9 @@
-﻿namespace DtekSheduleSendTg.Abstraction
+﻿using DtekSheduleSendTg.DTEK;
+
+namespace DtekSheduleSendTg.Abstraction
 {
     public interface ISiteAnalyzer
     {
-        ISiteAnalyzerResult Analyze();
+        SiteAnalyzerResult Analyze();
     }
 }

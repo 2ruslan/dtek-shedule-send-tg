@@ -2,8 +2,9 @@
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class SiteAnalyzerTextResult : ISiteAnalyzerResult
-    {
+    public record SiteAnalyzerResult //: ISiteAnalyzerResult 
+    { 
+        public string PIctureFile { get; set; }
         public string Text { get; set; }
     }
 }
