@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DtekSheduleSendTg", "DtekSh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DtekSheduleSendTg.Tests", "DtekSheduleSendTg.Tests\DtekSheduleSendTg.Tests.csproj", "{63810CFB-7342-4525-8CA1-EFF40CD7052B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegisterBotConsole", "RegisterBotConsole\RegisterBotConsole.csproj", "{2811B959-71F2-4FE5-9093-75F14B583624}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{63810CFB-7342-4525-8CA1-EFF40CD7052B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63810CFB-7342-4525-8CA1-EFF40CD7052B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63810CFB-7342-4525-8CA1-EFF40CD7052B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2811B959-71F2-4FE5-9093-75F14B583624}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2811B959-71F2-4FE5-9093-75F14B583624}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2811B959-71F2-4FE5-9093-75F14B583624}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2811B959-71F2-4FE5-9093-75F14B583624}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
