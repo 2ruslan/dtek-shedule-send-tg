@@ -1,1 +1,50 @@
-test
+[
+  {
+    "Group": 1,
+    "BlacInfo": [
+      {
+        "Start": "8:00",
+        "End": "10:00"
+      },
+      {
+        "Start": "15:00",
+        "End": "19:00"
+      }
+    ]
+  },
+  {
+    "Group": 2,
+    "BlacInfo": []
+  },
+  {
+    "Group": 3,
+    "BlacInfo": [
+      {
+        "Start": "9:00",
+        "End": "13:00"
+      }
+    ]
+  },
+  {
+    "Group": 4,
+    "BlacInfo": [
+      {
+        "Start": "18:00",
+        "End": "23:00"
+      }
+    ]
+  },
+  {
+    "Group": 5,
+    "BlacInfo": []
+  },
+  {
+    "Group": 6,
+    "BlacInfo": [
+      {
+        "Start": "12:00",
+        "End": "16:00"
+      }
+    ]
+  }
+]
