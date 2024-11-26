@@ -3,17 +3,20 @@ using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using RegisterBotConsole.Data.ChatInfo;
 using Telegram.Bot;
-using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
 
 const string StartMessage = 
 "Для регістрації відправки розкладу відключень відправте повідомлення з" + "\r\n" +
         "  ід групи (можна скористатися ботом @userinfobot)" + "\r\n" +
-        "  латинську літеру k (для Києва) або r (для області)" + "\r\n" +
+        "  латинську літеру:" + "\r\n" +
+        "    k - для Києва, " + "\r\n" +
+        "    r - для Київської області " + "\r\n" +
+        "    d - для Дніпра " + "\r\n" +
+        "    o - для Одеси " + "\r\n" +
         "  номером групи відключень (1-6) або латинську літеру d для видалення свого чату з відправки розкладу." + "\r\n" +
         "Ці дані повинні бути розділені пробілом." + "\r\n" +
-        "Приклад повідомлення для отримання графіків відключень в області по 3 групі: -123456789 r 3" + "\r\n" +
-        "Приклад повідомлення для видалення в області по 3 групі: -123456789 r d"
+        "Приклад повідомлення для отримання графіків відключень в київській області по 3 групі: -123456789 r 3" + "\r\n" +
+        "Приклад повідомлення для видалення в київській області по 3 групі: -123456789 r d"
         ;
 
 ILogger logger = LoggerFactory
@@ -25,6 +28,8 @@ ILogger logger = LoggerFactory
 var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"];
 var kyivChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["KyivChatsFilePath"];
 var kyivRegionChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["KyivRegionChatsFilePath"];
+var dniproRegionChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["DnyproChatsFilePath"];
+var odesaChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["OdesaChatsFilePath"];
 
 var cancellationToken = new CancellationTokenSource().Token;
 
@@ -113,7 +118,7 @@ async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, C
 async Task<string> HandleMessage(string message, long userid)
 {
     var separators = new char[] { '\t', ' ', '\r', '\n', ',', ';' };
-    var types = new char[] { 'k', 'r'};
+    var types = new char[] { 'k', 'r', 'd', 'o'};
 
     var parts = (message ?? string.Empty).Split(separators);
 
@@ -137,7 +142,7 @@ async Task<string> HandleMessage(string message, long userid)
 
     var type = parts[1].Trim().ToLower().First();
     if (!types.Contains(type))
-        return "Другий парметр повинен бути латинська літера k (для Києва) або r (для області), d (для видалення інформації).";
+        return "Другий парметр повинен бути латинська літера що характеризує регіон (див.опис по start).";
     
     var part3 = parts[2].Trim().ToLower();
 
@@ -147,7 +152,17 @@ async Task<string> HandleMessage(string message, long userid)
     else if (!int.TryParse(parts[2].Trim(), out group) || group < 1 || group > 6)
         return "Третій параметр повинен бути номером групи відключення (1-6)";
 
-    var file = type == 'k' ? kyivChatsFilePath : kyivRegionChatsFilePath;
+    var file = string.Empty;
+    if (type == 'k')
+        file = kyivChatsFilePath;
+    else if (type == 'r')
+        file = kyivRegionChatsFilePath;
+    else if (type == 'd')
+        file = dniproRegionChatsFilePath;
+    else if (type == 'o')
+        file = odesaChatsFilePath;
+    else
+        return "Невідомий регіон";
 
     var repo = new ChatInfoRepository(file);
 

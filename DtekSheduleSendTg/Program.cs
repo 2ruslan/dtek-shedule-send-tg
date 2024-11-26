@@ -4,6 +4,7 @@ using DtekSheduleSendTg.Data.TextInfo;
 using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
+using System.Configuration;
 
 namespace DtekSheduleSendTg
 {
@@ -21,29 +22,32 @@ namespace DtekSheduleSendTg
         {
             logger.LogInformation("-------------------{0}--------------------", DateTime.Now.ToString());
 
-            var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"]; 
-            var site = System.Configuration.ConfigurationManager.AppSettings["Site"];
-            var shedilePicRegex = System.Configuration.ConfigurationManager.AppSettings["ShedilePicRegex"];
+            if (args.Length == 0)
+            {
+                logger.LogInformation("Start without region. Exit.");
+                return;
+            }
+            
+            var region = args[0];
 
-            var dtekShedulesFromFilePrarms = new DtekShedulesFromFilePrarms()
-            { 
-                GroupStart  = int.Parse(System.Configuration.ConfigurationManager.AppSettings["GroupStart"]),
-                GroupEnd    = int.Parse(System.Configuration.ConfigurationManager.AppSettings["GroupEnd"]),
-                GroupStep   = int.Parse(System.Configuration.ConfigurationManager.AppSettings["GroupStep"]),
-                TimeStart   = int.Parse(System.Configuration.ConfigurationManager.AppSettings["TimeStart"]),
-                TimeEnd     = int.Parse(System.Configuration.ConfigurationManager.AppSettings["TimeEnd"]),
-                TimeStep    = int.Parse(System.Configuration.ConfigurationManager.AppSettings["TimeStep"]),
-            };
+            logger.LogInformation("-------------------{0}--------------------", region);
 
-            var chatInfoRepository = new ChatInfoRepository();
-            var sheduleRepository = new SheduleRepository();
-            var textInfoRepository = new TextInfoRepository();
+            // global config value
+            var botToken = ConfigurationManager.AppSettings["BotToken"];
 
-            var siteSource = new SiteSource(logger, site);
+            // region config value
+            var site = GetRegionConfigValue("Site", region);
+            var shedilePicRegex = GetRegionConfigValue("SchedulePicRegex", region); 
+
+            var chatInfoRepository = new ChatInfoRepository(region);
+            var sheduleRepository = new SheduleRepository(region);
+            var textInfoRepository = new TextInfoRepository(region);
+
+            var siteSource = new SiteSource(logger, site, region);
 
             var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource, shedilePicRegex);
             var bot = new TelegramBot(logger, botToken);
-            var dtekShedule = new DtekShedule(logger, sheduleRepository, dtekShedulesFromFilePrarms);
+            var dtekShedule = new DtekShedule(logger, sheduleRepository);
 
             var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository);
 
@@ -52,6 +56,9 @@ namespace DtekSheduleSendTg
             logger.LogInformation("  ");
         }
 
+        private static string GetRegionConfigValue(string key, string region)
+            => ConfigurationManager.AppSettings[$"{region}.{key}"] ?? ConfigurationManager.AppSettings[key];
+        
         private static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
              => logger.LogError("UnhandledException : {0}", e);
     }

@@ -1,6 +1,7 @@
 ﻿using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Common;
 using DtekSheduleSendTg.Data.Shedule;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -8,25 +9,32 @@ using System.Text;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class DtekShedule(ILogger logger, ISheduleRepository repository
-        ,DtekShedulesFromFilePrarms pictDim) : IDtekShedule
+    public class DtekShedule(ILogger logger, ISheduleRepository repository) : IDtekShedule
     {
-        private readonly Rgba32 ColorWhite = new Rgba32(255, 255, 255, 255);
-
+        
         private IEnumerable<int> noSendSheduleGroup;
         private IEnumerable<SheduleData> sheduleGroupDescription;
 
         public bool AnalyzeFile(string file)
         {
-            var currentShedule = GetShedulesFromFile(file);
-            var prevShedule = repository.GetShedule();
+            try
+            {
+                var currentShedule = GetShedulesFromFile(file);
+                var prevShedule = repository.GetShedule();
 
-            noSendSheduleGroup = GetNoSendSheduleGroup(currentShedule, prevShedule);
+                noSendSheduleGroup = GetNoSendSheduleGroup(currentShedule, prevShedule);
 
-            sheduleGroupDescription = GetSheduleDescription(currentShedule);
+                sheduleGroupDescription = GetSheduleDescription(currentShedule);
 
-            repository.StoreShedule(currentShedule);
-
+                repository.StoreShedule(currentShedule);
+            }
+            catch (Exception ex)
+            {
+                sheduleGroupDescription = new List<SheduleData>();
+                repository.StoreShedule(new List<SheduleData>());
+                logger.LogError(ex, "AnalyzeFile");
+                return false;
+            }
             return true;
         }
 
@@ -35,7 +43,7 @@ namespace DtekSheduleSendTg.DTEK
 
         public string GetFullPictureDescription(long group, string firsttLine)
         {
-            var description = sheduleGroupDescription.FirstOrDefault(x => x.Group == group)?.SheduleString;
+            var description = sheduleGroupDescription?.FirstOrDefault(x => x.Group == group)?.SheduleString;
 
             var sb = new StringBuilder(firsttLine);
             if (!string.IsNullOrEmpty(description))
@@ -89,13 +97,13 @@ namespace DtekSheduleSendTg.DTEK
                     {
                         if (s == '0' && !isOpenD)
                         {
-                            sb.Append($"    {h} - ");
+                            sb.Append($"    {GetFormatedH(h)}:00 - ");
                             isOpenD = true;
                         }
 
                         if (s == '1' && isOpenD)
                         {
-                            sb.AppendLine(h.ToString());
+                            sb.AppendLine( $"{GetFormatedH(h)}:00");
                             isOpenD = false;
                         }
 
@@ -119,6 +127,9 @@ namespace DtekSheduleSendTg.DTEK
             return result;
         }
 
+        private string GetFormatedH(int h)
+            => h < 10 ? $" {h}" : h.ToString();
+
         private IEnumerable<SheduleData> GetShedulesFromFile(string file)
         {
             logger.LogInformation("Start GetShedules");
@@ -128,17 +139,18 @@ namespace DtekSheduleSendTg.DTEK
             try
             {
                 var img = Image.Load<Rgba32>(file);
-
+                var dim = PictureDimensionHelper.GetParamsFormImage(logger, img);
+                
                 int group = 1;
 
-                for (int g = pictDim.GroupStart; g < pictDim.GroupEnd; g += pictDim.GroupStep)
+                foreach (var g in dim.GroupCoord)
                 {
                     var sb = new StringBuilder();
 
-                    for (int t = pictDim.TimeStart; t < pictDim.TimeEnd; t += pictDim.TimeStep)
+                    foreach(var t in dim.TimeCoord)
                     {
+                        
                         int average = GetAverage(img, t, g);
-                        Console.WriteLine(g);
 
                         sb.Append(average > 240 ? "1" : "0");
                     }

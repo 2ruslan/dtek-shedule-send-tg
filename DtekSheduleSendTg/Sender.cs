@@ -1,5 +1,4 @@
 ﻿using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
 
 
@@ -31,13 +30,13 @@ namespace DtekSheduleSendTg
         private void SendText(string message)
         {
             logger.LogInformation("Start SendText");
-
+            /*
             var chats = chatInfoRepository.GetChatInfo();
             logger.LogInformation("Chat Info count = {0}", chats.Count());
 
             foreach (var chat in chats)
                 bot.SendText(chat.Id, message);
-
+            */
             logger.LogInformation("End SendText");
         }
 
@@ -57,12 +56,13 @@ namespace DtekSheduleSendTg
             {
                 try
                 {
+                    /*
                     if (dtekShedule.IsNoSendPicture2Group(chat.Group))
                     {
                         logger.LogInformation("IsNoSendPicture2Group {0}", chat.Group);
                         continue;
                     }
-
+                    */
                     var description = dtekShedule.GetFullPictureDescription(chat.Group, chat.Caption);
 
                     bot.SendPicture(chat.Id, fileName, description);

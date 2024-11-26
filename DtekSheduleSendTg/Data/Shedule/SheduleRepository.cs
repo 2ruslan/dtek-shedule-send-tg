@@ -3,9 +3,9 @@ using System.Text.Json;
 
 namespace DtekSheduleSendTg.Data.Shedule
 {
-    public class SheduleRepository : ISheduleRepository
+    public class SheduleRepository (string regionDir) : ISheduleRepository
     {
-        private readonly string SheduleFile = Path.Combine(Environment.CurrentDirectory, "Shedule", "SheduleLast.json");
+        private readonly string SheduleFile = Path.Combine(Environment.CurrentDirectory, "WorkDir", regionDir, "Shedule", "SheduleLast.json");
 
         public IEnumerable<SheduleData> GetShedule()
             => JsonSerializer.Deserialize<List<SheduleData>>(File.ReadAllText(SheduleFile));

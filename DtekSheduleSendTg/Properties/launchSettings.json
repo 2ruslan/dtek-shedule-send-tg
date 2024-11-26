@@ -1,7 +1,8 @@
 {
   "profiles": {
     "dtek-shedule-send-tg": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "Odesa"
     },
     "Docker": {
       "commandName": "Docker"

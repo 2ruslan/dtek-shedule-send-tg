@@ -3,10 +3,10 @@ using System.Text.Json;
 
 namespace DtekSheduleSendTg.Data.TextInfo
 {
-    public class TextInfoRepository : ITextInfoRepository
+    public class TextInfoRepository(string regionDir) : ITextInfoRepository
     {
-        private readonly string InfoFile = Path.Combine(Environment.CurrentDirectory, "TextInfo", "Messages.json");
-        private readonly string LastInfoFile = Path.Combine(Environment.CurrentDirectory, "TextInfo", "LastInfoMessage.txt");
+        private readonly string InfoFile = Path.Combine(Environment.CurrentDirectory, "WorkDir", regionDir, "TextInfo", "Messages.json");
+        private readonly string LastInfoFile = Path.Combine(Environment.CurrentDirectory, "WorkDir", regionDir, "TextInfo", "LastInfoMessage.txt");
 
         public IEnumerable<TextInfo> GetTextInfo()
             => JsonSerializer.Deserialize<List<TextInfo>>(File.ReadAllText(InfoFile));

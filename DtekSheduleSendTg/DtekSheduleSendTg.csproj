@@ -35,17 +35,35 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Chats\ChatInfo.json">
+    <None Update="WorkDir\Odesa\Chats\ChatInfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Shedule\SheduleLast.json">
+    <None Update="WorkDir\Odesa\Shedule\SheduleLast.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="TextInfo\Messages.json">
+    <None Update="WorkDir\Odesa\TextInfo\Messages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="WorkDir\KyivRegion\Chats\ChatInfo.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="WorkDir\KyivRegion\Shedule\SheduleLast.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="WorkDir\KyivRegion\TextInfo\Messages.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="WorkDir\Kyiv\Chats\ChatInfo.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="WorkDir\Kyiv\Shedule\SheduleLast.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="WorkDir\Kyiv\TextInfo\Messages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties textinfo_4messages_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

@@ -4,7 +4,7 @@ using System.Net;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class SiteSource(ILogger logger, string site) : ISiteSource
+    public class SiteSource(ILogger logger, string site, string region) : ISiteSource
     {
         public string GetSource()
             => GetSource(0);
@@ -42,7 +42,7 @@ namespace DtekSheduleSendTg.DTEK
             if (string.IsNullOrEmpty(fileName))
                 return string.Empty;
 
-            var dir = Path.Combine(Environment.CurrentDirectory, "pict");
+            var dir = Path.Combine(Environment.CurrentDirectory, "WorkDir", region, "pict");
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
 
