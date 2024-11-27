@@ -188,7 +188,7 @@ async Task<string> HandleMessage(string message, long userid)
     else if (chat != null)
     {
         chat.Group = group;
-        chat.Caption = $"Графік відключень, {group} група";
+        chat.Caption = $"🗓️Графік відключень, {group} група";
         chat.IsDeletePrevMessage = IsDeletePrevMessage;
         chat.IsSendTextMessage = IsSendTextMessage;
     }
@@ -196,7 +196,7 @@ async Task<string> HandleMessage(string message, long userid)
         chats.Add(new ChatInfo()
         {
             Id = chatId,
-            Caption = $"Графік відключень, {group} група",
+            Caption = $"🗓️Графік відключень, {group} група",
             Group = group,
             IsDeletePrevMessage = IsDeletePrevMessage,
             IsSendTextMessage = IsSendTextMessage
