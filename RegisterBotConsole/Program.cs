@@ -15,8 +15,13 @@ const string StartMessage =
         "    o - для Одеси " + "\r\n" +
         "  номером групи відключень (1-6) або латинську літеру d для видалення свого чату з відправки розкладу." + "\r\n" +
         "Ці дані повинні бути розділені пробілом." + "\r\n" +
+        "Також є можливість використовувати додаткові параметри :" + "\r\n" +
+        "  +delold - для видалення попереднього повідомлення з розкладом" + "\r\n" +
+        "  +addtext - для відправки текстових інформаційних повідомлень від НЕК Укренерго" + "\r\n" +
         "Приклад повідомлення для отримання графіків відключень в київській області по 3 групі: -123456789 r 3" + "\r\n" +
-        "Приклад повідомлення для видалення в київській області по 3 групі: -123456789 r d"
+        "Приклад повідомлення для видалення в київській області : -123456789 r d" + "\r\n" +
+        "Приклад повідомлення для з видалення попереднього повідомлення з розкладом для 2 групи: -123456789 r 2 +delold" + "\r\n" +
+        "Приклад повідомлення для з видалення попереднього повідомлення з розкладом для 2 групи і відправкою інформаційних повідомлень від НЕК Укренерг: -123456789 r 2 +delold+addtext"
         ;
 
 ILogger logger = LoggerFactory
@@ -119,11 +124,14 @@ async Task<string> HandleMessage(string message, long userid)
 {
     var separators = new char[] { '\t', ' ', '\r', '\n', ',', ';' };
     var types = new char[] { 'k', 'r', 'd', 'o'};
+    const string DelOldCommand = "+delold";
+    const string AddTextCommand = "+addtext";
+    
 
     var parts = (message ?? string.Empty).Split(separators);
 
-    if (parts.Length != 3)
-        return "Невірний формат повідомлення (повинен скаладатися з трьох частин).";
+    if (parts.Length < 3)
+        return "Невірний формат повідомлення (повинен скаладатися з трьох(або більше) частин).";
 
     long chatId;
     if (!long.TryParse(parts[0].Trim(), out chatId) || chatId > 0)
@@ -152,6 +160,9 @@ async Task<string> HandleMessage(string message, long userid)
     else if (!int.TryParse(parts[2].Trim(), out group) || group < 1 || group > 6)
         return "Третій параметр повинен бути номером групи відключення (1-6)";
 
+    var IsDeletePrevMessage = (message ?? string.Empty).Contains(DelOldCommand);
+    var IsSendTextMessage   = (message ?? string.Empty).Contains(AddTextCommand);
+
     var file = string.Empty;
     if (type == 'k')
         file = kyivChatsFilePath;
@@ -178,13 +189,17 @@ async Task<string> HandleMessage(string message, long userid)
     {
         chat.Group = group;
         chat.Caption = $"Графік відключень, {group} група";
+        chat.IsDeletePrevMessage = IsDeletePrevMessage;
+        chat.IsSendTextMessage = IsSendTextMessage;
     }
     else
         chats.Add(new ChatInfo()
         {
             Id = chatId,
             Caption = $"Графік відключень, {group} група",
-            Group = group
+            Group = group,
+            IsDeletePrevMessage = IsDeletePrevMessage,
+            IsSendTextMessage = IsSendTextMessage
         });
 
     repo.StoreChatInfo(chats);

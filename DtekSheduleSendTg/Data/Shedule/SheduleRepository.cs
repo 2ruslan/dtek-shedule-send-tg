@@ -8,7 +8,9 @@ namespace DtekSheduleSendTg.Data.Shedule
         private readonly string SheduleFile = Path.Combine(Environment.CurrentDirectory, "WorkDir", regionDir, "Shedule", "SheduleLast.json");
 
         public IEnumerable<SheduleData> GetShedule()
-            => JsonSerializer.Deserialize<List<SheduleData>>(File.ReadAllText(SheduleFile));
+            => File.Exists(SheduleFile) 
+                ? JsonSerializer.Deserialize<List<SheduleData>>(File.ReadAllText(SheduleFile))
+                : new List<SheduleData>();
 
         public void StoreShedule(IEnumerable<SheduleData> shedules)
             => File.WriteAllText(SheduleFile, JsonSerializer.Serialize(shedules));

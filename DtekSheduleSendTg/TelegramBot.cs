@@ -15,32 +15,35 @@ namespace DtekSheduleSendTg
 
         private readonly Dictionary<string, string> fileInfo= new();
 
-        public void SendText(long chatId, string message)
+        public async Task<int> SendText(long chatId, string message)
         {
             logger.LogInformation("TelegramBot start SendText");
+            
+            Message result = null;
 
             try
             {
                 logger.LogInformation("Try Send {0} to {1}", message, chatId);
 
                 Thread.Sleep(WAIT_BEFORE_SEND_TEXT * 1000);
-                Message result;
+                
                 try
                 {
                     // try send as html
                     logger.LogInformation("Try Send as html [{0}]", message);
 
-                    result = bot.SendTextMessageAsync(chatId,
+                    result = await bot.SendMessage(chatId,
                                                        message.FixHtml2Telegram(),
                                                        disableNotification: true,
                                                        parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
-                                ).Result;
+                                );
                 }
-                catch {
+                catch (Exception ex)
+                {
                     // try send as text
-                    logger.LogInformation("Try Send as text [{0}]", message);
+                    logger.LogError(ex, "Try Send as text [{0}]", message);
 
-                    result = bot.SendTextMessageAsync(chatId,
+                    result = bot.SendMessage(chatId,
                                                          message.DeleteAllTags(),
                                                          disableNotification:true
                                   ).Result;
@@ -53,18 +56,22 @@ namespace DtekSheduleSendTg
             {
                 logger.LogError(ex, "Error send to {0}", chatId);
             }
-
+            
             logger.LogInformation("TelegramBot end SendText");
+
+            return result == null? -1 : result.Id;
         }
 
-        public void SendPicture(long chatId, string fileName, string description)
+        public async Task<int> SendPicture(long chatId, string fileName, string description)
         {
             logger.LogInformation("TelegramBot start SendPicture");
 
             logger.LogInformation("Try send {0} to {1}", fileName, chatId);
 
             if (string.IsNullOrEmpty(fileName))
-                return;
+                return -1;
+
+            Message result = null;
 
             try
             {
@@ -76,29 +83,29 @@ namespace DtekSheduleSendTg
                     : InputFile.FromFileId(fileId);
 
                 Thread.Sleep(WAIT_BEFORE_SEND_PICTURE * 1000);
-                Message result;
+                
                 try
                 {
                     // try send caption as html
                     logger.LogInformation("Try Send as html [{0}]", description);
 
-                    result = bot.SendPhotoAsync(chatId,
+                    result = await bot.SendPhoto(chatId,
                                                     inputFile,
                                                     caption: description.FixHtml2Telegram(),
                                                     disableNotification: true,
                                                     parseMode: Telegram.Bot.Types.Enums.ParseMode.Html
-                                                    ).Result;
+                                                    );
                 }
-                catch
+                catch(Exception ex)
                 {
                     // try send caption as text
-                    logger.LogInformation("Try Send as text [{0}]", description);
+                    logger.LogError(ex, "Try Send as text [{0}]", description);
 
-                    result = bot.SendPhotoAsync(chatId,
+                    result = await bot.SendPhoto(chatId,
                                                     inputFile,
                                                     caption: description.DeleteAllTags(),
                                                     disableNotification: true
-                                                    ).Result;
+                                                    );
                 }
 
                 fileInfo[fileName] = result.Photo.FirstOrDefault()?.FileId;
@@ -113,6 +120,23 @@ namespace DtekSheduleSendTg
             }
 
             logger.LogInformation("TelegramBot end SendPicture");
+
+            return result == null ? -1 : result.Id;
+        }
+
+        public async Task DeleteMessage(long chatId, int msgId)
+        {
+            logger.LogInformation("TelegramBot start DeleteMessage {0} from {0}", msgId, chatId);
+
+            try
+            {
+                await bot.DeleteMessage(chatId, msgId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error delete from {0} message {1}", chatId, msgId);
+            }
+            logger.LogInformation("TelegramBot start DeleteMessage");
         }
     }
 }

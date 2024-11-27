@@ -1,6 +1,8 @@
-﻿using DtekSheduleSendTg.Data.ChatInfo;
+﻿using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Data.ChatInfo;
 using DtekSheduleSendTg.Data.Shedule;
 using DtekSheduleSendTg.Data.TextInfo;
+using DtekSheduleSendTg.Data.WotkInfo;
 using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
@@ -18,7 +20,7 @@ namespace DtekSheduleSendTg
         static Program()
             => AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             logger.LogInformation("-------------------{0}--------------------", DateTime.Now.ToString());
 
@@ -42,6 +44,8 @@ namespace DtekSheduleSendTg
             var chatInfoRepository = new ChatInfoRepository(region);
             var sheduleRepository = new SheduleRepository(region);
             var textInfoRepository = new TextInfoRepository(region);
+            var workInfoRepository = new WorkInfoRepository(region);
+
 
             var siteSource = new SiteSource(logger, site, region);
 
@@ -49,9 +53,9 @@ namespace DtekSheduleSendTg
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger, sheduleRepository);
 
-            var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository);
+            var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository, workInfoRepository);
 
-            sender.CheckAndSend();
+            await sender.CheckAndSend();
 
             logger.LogInformation("  ");
         }

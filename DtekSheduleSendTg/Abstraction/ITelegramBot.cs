@@ -2,7 +2,8 @@
 {
     public interface ITelegramBot
     {
-        void SendPicture(long chatId, string fileName, string description);
-        void SendText(long chatId, string message);
+        Task<int> SendPicture(long chatId, string fileName, string description);
+        Task<int> SendText(long chatId, string message);
+        Task DeleteMessage(long chatId, int msgId);
     }
 }
