@@ -39,12 +39,14 @@ namespace DtekSheduleSendTg.DTEK
 
             var m = Regex.Matches(source, shedilePicRegex); 
 
-            if (m != null)
+            if (m?.Count > 0)
             {
                 logger.LogInformation("GetPictureUrl : {0}", m[^1].Value);
                 
                 return m[^1].Value;
             }
+            else
+                logger.LogInformation("GetPictureUrl : no picture");
 
             logger.LogInformation("end GetPictureUrl");
 
