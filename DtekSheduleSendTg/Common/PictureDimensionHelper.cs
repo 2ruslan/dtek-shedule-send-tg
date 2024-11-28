@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.ColorSpaces;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Text;
 
@@ -25,8 +24,8 @@ namespace DtekSheduleSendTg.DTEK
 
             var leftBorder = GetNext(img, x, y, Direction.right);
 
-            var nextB = GetNext(img, leftBorder.x + 5, leftBorder.y, Direction.bottom);
-            var prevB = GetNext(img, leftBorder.x + 5, leftBorder.y, Direction.top);
+            var nextB = GetNext(img, leftBorder.x + 10, leftBorder.y, Direction.bottom);
+            var prevB = GetNext(img, leftBorder.x + 10, leftBorder.y, Direction.top);
 
             var yStep = nextB.y - prevB.y;
             var yStart = prevB.y - (yStep * 2) + (yStep / 2);
@@ -39,12 +38,11 @@ namespace DtekSheduleSendTg.DTEK
             y = yStart;
 
             var rightBorderBe = GetNext(img, x, y, Direction.left);
-            var rightBorderBs = GetNext(img, rightBorderBe.x, rightBorderBe.y, Direction.left);
 
-            var topBorderBe = GetNext(img, rightBorderBs.x, rightBorderBs.y, Direction.top);
-            var topBorderBs = GetNext(img, topBorderBe.x, topBorderBe.y, Direction.top);
+            var topCaptBorder = GetNext(img, rightBorderBe.x, rightBorderBe.y, Direction.top);
+            var topBorderBs = GetNext(img, topCaptBorder.x - 5, topCaptBorder.y, Direction.bottom);
 
-            var tlast = GetNext(img, topBorderBs.x, topBorderBs.y, Direction.left);
+            var tlast = GetNext(img, topBorderBs.x, topBorderBs.y - 2, Direction.left);
             var first = (tlast.x, tlast.y);
 
             for (int i = 0; i < 46; i++)
@@ -58,6 +56,7 @@ namespace DtekSheduleSendTg.DTEK
                 var p = start + (first.x - start) / 2;
                 TimeCoord.Add(p);
             }
+
             StringBuilder sb = new StringBuilder();
             foreach(var g in GroupCoord)
                 sb.Append($"{g}, ");
@@ -103,6 +102,8 @@ namespace DtekSheduleSendTg.DTEK
                 var nextPixel = img[x, y];
 
                 nextAvg = (int)Math.Round(.299 * nextPixel.R + .587 * nextPixel.G + .114 * nextPixel.B);
+
+              //  Console.WriteLine($"{nextAvg} {startAvg}"); 
             }
 
             return (x, y);

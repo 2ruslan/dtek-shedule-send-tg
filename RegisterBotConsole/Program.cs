@@ -18,6 +18,7 @@ const string StartMessage =
         "Також є можливість використовувати додаткові параметри :" + "\r\n" +
         "  +delold - для видалення попереднього повідомлення з розкладом" + "\r\n" +
         "  +addtext - для відправки текстових інформаційних повідомлень від НЕК Укренерго" + "\r\n" +
+        "  +piconly - для відправки графіка без тексту" + "\r\n" +
         "Приклад повідомлення для отримання графіків відключень в київській області по 3 групі: -123456789 r 3" + "\r\n" +
         "Приклад повідомлення для видалення в київській області : -123456789 r d" + "\r\n" +
         "Приклад повідомлення для з видалення попереднього повідомлення з розкладом для 2 групи: -123456789 r 2 +delold" + "\r\n" +
@@ -126,7 +127,8 @@ async Task<string> HandleMessage(string message, long userid)
     var types = new char[] { 'k', 'r', 'd', 'o'};
     const string DelOldCommand = "+delold";
     const string AddTextCommand = "+addtext";
-    
+    const string PictureOnlyCommand = "+piconly"; 
+
 
     var parts = (message ?? string.Empty).Split(separators);
 
@@ -162,6 +164,7 @@ async Task<string> HandleMessage(string message, long userid)
 
     var IsDeletePrevMessage = (message ?? string.Empty).Contains(DelOldCommand);
     var IsSendTextMessage   = (message ?? string.Empty).Contains(AddTextCommand);
+    var IsPictureOnly       = (message ?? string.Empty).Contains(PictureOnlyCommand);
 
     var file = string.Empty;
     if (type == 'k')
@@ -191,6 +194,7 @@ async Task<string> HandleMessage(string message, long userid)
         chat.Caption = $"🗓️Графік відключень, {group} група";
         chat.IsDeletePrevMessage = IsDeletePrevMessage;
         chat.IsSendTextMessage = IsSendTextMessage;
+        chat.IsNoSendPictureDescription = IsPictureOnly;
     }
     else
         chats.Add(new ChatInfo()
@@ -199,7 +203,8 @@ async Task<string> HandleMessage(string message, long userid)
             Caption = $"🗓️Графік відключень, {group} група",
             Group = group,
             IsDeletePrevMessage = IsDeletePrevMessage,
-            IsSendTextMessage = IsSendTextMessage
+            IsSendTextMessage = IsSendTextMessage,
+            IsNoSendPictureDescription = IsPictureOnly
         });
 
     repo.StoreChatInfo(chats);

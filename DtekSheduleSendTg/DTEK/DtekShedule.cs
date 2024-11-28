@@ -111,7 +111,7 @@ namespace DtekSheduleSendTg.DTEK
                     }
 
                     if (isOpenD)
-                        sb.AppendLine("24");
+                        sb.AppendLine("24:00");
 
                     if (sb.Length == 0)
                         sb.Append("    - не планується");

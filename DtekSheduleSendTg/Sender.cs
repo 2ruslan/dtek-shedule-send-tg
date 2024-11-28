@@ -67,7 +67,9 @@ namespace DtekSheduleSendTg
                         continue;
                     }
                     */
-                    var description = dtekShedule.GetFullPictureDescription(chat.Group, chat.Caption);
+                    var description = chat.IsNoSendPictureDescription 
+                        ? string.Empty
+                        : dtekShedule.GetFullPictureDescription(chat.Group, chat.Caption);
 
                     var id = await bot.SendPicture(chat.Id, fileName, description);
 

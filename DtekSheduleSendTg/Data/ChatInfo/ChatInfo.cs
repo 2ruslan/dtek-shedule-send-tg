@@ -9,5 +9,7 @@ namespace DtekSheduleSendTg.Data.ChatInfo
 
         public bool IsDeletePrevMessage { get; set; }
         public bool IsSendTextMessage { get; set; }
+
+        public bool IsNoSendPictureDescription { get; set; }
     }
 }
