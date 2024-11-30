@@ -1,7 +1,7 @@
 ﻿using DtekSheduleSendTg.Abstraction;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Text.RegularExpressions;
+using Telegram.Bot.Types;
 
 namespace DtekSheduleSendTg.DTEK
 {
@@ -22,35 +22,40 @@ namespace DtekSheduleSendTg.DTEK
             if (!string.IsNullOrEmpty(info))
                 result.Text = info;
 
-            var pictureUrl = GetPictureUrl(source);
-            if (!string.IsNullOrEmpty(pictureUrl))
+            var pictureUrls = GetPictureUrl(source);
+            
+            var files = new List<string>();
+            foreach (var pictureUrl in pictureUrls)
             {
                 var fileName = siteSource.StorePicFromUrl(pictureUrl);
                 if (!string.IsNullOrEmpty(fileName))
-                    result.PIctureFile = fileName;
+                    files.Add(fileName);
+                    
             }
+            result.PIctureFiles = files;
 
             return result;
         }
 
-        private string GetPictureUrl(string source)
+        private IEnumerable<string> GetPictureUrl(string source)
         {
+            var result = new List<string>();
             logger.LogInformation("Start GetPictureUrl");
 
-            var m = Regex.Matches(source, shedilePicRegex); 
+            var m = Regex.Matches(source, shedilePicRegex);
 
-            if (m?.Count > 0)
+            logger.LogInformation("GetPictureUrl count: {0}", m.Count);
+
+
+            foreach (var m2 in m)
             {
-                logger.LogInformation("GetPictureUrl : {0}", m[^1].Value);
-                
-                return m[^1].Value;
+                logger.LogInformation(m2.ToString());
+                result.Add(m2.ToString());
             }
-            else
-                logger.LogInformation("GetPictureUrl : no picture");
 
             logger.LogInformation("end GetPictureUrl");
 
-            return string.Empty;
+            return result;
         }
 
         private string GetInfoText(string source)

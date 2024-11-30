@@ -22,8 +22,8 @@ namespace DtekSheduleSendTg
             if (!string.IsNullOrEmpty(siteInfo.Text))
                 await SendText(siteInfo.Text);
 
-            if (!string.IsNullOrEmpty(siteInfo.PIctureFile))
-                await SendPicture(siteInfo.PIctureFile);
+            foreach(var file in siteInfo.PIctureFiles)
+                await SendPicture(file);
             
             logger.LogInformation("End CheckAndSend");
         }

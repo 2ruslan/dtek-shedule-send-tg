@@ -34,8 +34,7 @@ namespace DtekSheduleSendTg.DTEK
             var sheduleString = CurrentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
 
             var sb = new StringBuilder();
-            sb.AppendLine(firsttLine);
-
+            
             try
             {
                 var h = 0;
@@ -63,12 +62,14 @@ namespace DtekSheduleSendTg.DTEK
                     sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, 24));
 
                 if (sb.Length == 0)
-                    sb.Append("    - не планується");
+                    sb.Append("<b>    - не планується</b>");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "GetSheduleDescription");
             }
+
+            sb.Insert(0, $"{firsttLine}\r\n");
 
             return sb.ToString();
         }
