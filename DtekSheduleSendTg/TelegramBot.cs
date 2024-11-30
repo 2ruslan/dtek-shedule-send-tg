@@ -1,5 +1,5 @@
 ﻿using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.Common;
+using Common;
 using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;

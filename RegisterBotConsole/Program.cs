@@ -1,9 +1,14 @@
 ﻿
+using Common;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
+using RegisterBotConsole;
 using RegisterBotConsole.Data.ChatInfo;
+using System.Security.Cryptography.Xml;
+using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
+using Telegram.Bot.Types;
 
 const string StartMessage = 
 "Для регістрації відправки розкладу відключень відправте повідомлення з" + "\r\n" +
@@ -26,10 +31,10 @@ const string StartMessage =
         ;
 
 ILogger logger = LoggerFactory
-                                            .Create(builder => builder
-                                                            .AddConsole()
-                                                            .AddFile("app.log", append: true)
-                                            ).CreateLogger("DtekSheduleSendTg");
+                      .Create(builder => builder
+                                             .AddConsole()
+                                             .AddFile("app.log", append: true)
+                             ).CreateLogger("DtekSheduleSendTg");
 
 var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"];
 var kyivChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["KyivChatsFilePath"];
@@ -105,7 +110,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Up
                 }
             }
 
-            await bot.SendMessage(message.Chat.Id, outMessage);
+            await bot.SendMessage(message.Chat.Id, outMessage, parseMode: Telegram.Bot.Types.Enums.ParseMode.Html);
         }
     }
     catch (Exception ex)
@@ -114,8 +119,6 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Up
     }
 }
 
-
-
 async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
 {
     logger.LogError(exception, "HandleErrorAsync");
@@ -123,22 +126,67 @@ async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, C
 
 async Task<string> HandleMessage(string message, long userid)
 {
-    var separators = new char[] { '\t', ' ', '\r', '\n', ',', ';' };
-    var types = new char[] { 'k', 'r', 'd', 'o'};
-    const string DelOldCommand = "+delold";
-    const string AddTextCommand = "+addtext";
-    const string PictureOnlyCommand = "+piconly"; 
+    var paser = new Paser();
+    var paresrResult = await paser.Parse(message);
 
+    if (paresrResult.HasError)
+        return paresrResult.Error;
 
-    var parts = (message ?? string.Empty).Split(separators);
+    var rightsError = await CheckRights(paresrResult.Id.Value, userid);
+    if (!string.IsNullOrEmpty(rightsError))
+        return rightsError;
 
-    if (parts.Length < 3)
-        return "Невірний формат повідомлення (повинен скаладатися з трьох(або більше) частин).";
+    var file = ResolveFileName(paresrResult.Region);
+    if (string.IsNullOrEmpty(file))
+        return "Невідомий регіон";
 
-    long chatId;
-    if (!long.TryParse(parts[0].Trim(), out chatId) || chatId > 0)
-        return "Перший параметр повинен бути ід групи (від`ємне цифрове значення)";
+    var chatSettings = new ChatSettings(file, paresrResult.Id.Value);
 
+    if (paresrResult.IsDeleteChatCommand)
+    {
+        chatSettings.RemoveChat();
+    }
+    else
+    {
+        if (paresrResult.Group.HasValue)
+            chatSettings.SetGroup(paresrResult.Group.Value);
+
+        if (paresrResult.IsDeletePrevMessage.HasValue)
+            chatSettings.IsDeletePrevMessage = paresrResult.IsDeletePrevMessage.Value;
+
+        if (paresrResult.IsSendTextMessage.HasValue)
+            chatSettings.IsSendTextMessage = paresrResult.IsSendTextMessage.Value;
+
+        if (paresrResult.IsNoSendPictureDescription.HasValue)
+            chatSettings.IsNoSendPictureDescription = paresrResult.IsNoSendPictureDescription.Value;
+
+        if (paresrResult.HasCaption)
+            chatSettings.Caption = paresrResult.Caption;
+
+        if (paresrResult.HasPowerOffLeadingSymbol)
+            chatSettings.PowerOffLeadingSymbol = paresrResult.PowerOffLeadingSymbol;
+
+        if (paresrResult.HasPowerOffLinePattern)
+            chatSettings.PowerOffLinePattern = paresrResult.PowerOffLinePattern;
+    }
+
+    chatSettings.ApllyChanges();
+
+    var sb = new StringBuilder("Успішно виконано.");
+
+    if (paresrResult.HasCaption || paresrResult.HasPowerOffLeadingSymbol || paresrResult.HasPowerOffLinePattern)
+    {
+        sb.AppendLine("Приклад підпису:");
+        sb.AppendLine(chatSettings.Caption);
+        sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
+        sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
+    }
+        
+    return sb.ToString();
+}
+
+async Task<string> CheckRights(long chatId, long userid)
+{
     var chkChat = await bot.GetChat(chatId);
 
     var admins = await bot.GetChatAdministrators(chkChat.Id);
@@ -150,64 +198,19 @@ async Task<string> HandleMessage(string message, long userid)
     if (botAdmin == null)
         return "У бота відсутні права адміністратора на вказаний чат/групу.";
 
-    var type = parts[1].Trim().ToLower().First();
-    if (!types.Contains(type))
-        return "Другий парметр повинен бути латинська літера що характеризує регіон (див.опис по start).";
-    
-    var part3 = parts[2].Trim().ToLower();
+    return string.Empty;
+}
 
-    int group;
-    if (part3 == "d")
-        group = -1;
-    else if (!int.TryParse(parts[2].Trim(), out group) || group < 1 || group > 6)
-        return "Третій параметр повинен бути номером групи відключення (1-6)";
-
-    var IsDeletePrevMessage = (message ?? string.Empty).Contains(DelOldCommand);
-    var IsSendTextMessage   = (message ?? string.Empty).Contains(AddTextCommand);
-    var IsPictureOnly       = (message ?? string.Empty).Contains(PictureOnlyCommand);
-
-    var file = string.Empty;
-    if (type == 'k')
-        file = kyivChatsFilePath;
-    else if (type == 'r')
-        file = kyivRegionChatsFilePath;
-    else if (type == 'd')
-        file = dniproRegionChatsFilePath;
-    else if (type == 'o')
-        file = odesaChatsFilePath;
+string ResolveFileName(string region)
+{
+    if (region == "k")
+        return kyivChatsFilePath;
+    else if (region == "r")
+        return kyivRegionChatsFilePath;
+    else if (region == "d")
+        return dniproRegionChatsFilePath;
+    else if (region == "o")
+        return odesaChatsFilePath;
     else
-        return "Невідомий регіон";
-
-    var repo = new ChatInfoRepository(file);
-
-    var chats = repo.GetChatInfo();
-
-    var chat = chats.FirstOrDefault(x => x.Id == chatId);
-
-    if (group == -1)
-    {
-        chats.Remove(chat);
-    }
-    else if (chat != null)
-    {
-        chat.Group = group;
-        chat.Caption = $"🗓️Графік відключень, {group} група";
-        chat.IsDeletePrevMessage = IsDeletePrevMessage;
-        chat.IsSendTextMessage = IsSendTextMessage;
-        chat.IsNoSendPictureDescription = IsPictureOnly;
-    }
-    else
-        chats.Add(new ChatInfo()
-        {
-            Id = chatId,
-            Caption = $"🗓️Графік відключень, {group} група",
-            Group = group,
-            IsDeletePrevMessage = IsDeletePrevMessage,
-            IsSendTextMessage = IsSendTextMessage,
-            IsNoSendPictureDescription = IsPictureOnly
-        });
-
-    repo.StoreChatInfo(chats);
-
-    return "Успішно виконано.";
+        return string.Empty;
 }

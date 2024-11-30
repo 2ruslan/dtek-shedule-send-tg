@@ -1,7 +1,6 @@
-﻿using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.Common;
+﻿using Common;
+using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.Shedule;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,26 +10,18 @@ namespace DtekSheduleSendTg.DTEK
 {
     public class DtekShedule(ILogger logger, ISheduleRepository repository) : IDtekShedule
     {
-        
-        private IEnumerable<int> noSendSheduleGroup;
-        private IEnumerable<SheduleData> sheduleGroupDescription;
+        private IEnumerable<SheduleData> CurrentShedule = new List<SheduleData>();
 
         public bool AnalyzeFile(string file)
         {
             try
             {
-                var currentShedule = GetShedulesFromFile(file);
-                var prevShedule = repository.GetShedule();
+                CurrentShedule = GetShedulesFromFile(file);
 
-                noSendSheduleGroup = GetNoSendSheduleGroup(currentShedule, prevShedule);
-
-                sheduleGroupDescription = GetSheduleDescription(currentShedule);
-
-                repository.StoreShedule(currentShedule);
+                repository.StoreShedule(CurrentShedule);
             }
             catch (Exception ex)
             {
-                sheduleGroupDescription = new List<SheduleData>();
                 repository.StoreShedule(new List<SheduleData>());
                 logger.LogError(ex, "AnalyzeFile");
                 return false;
@@ -38,97 +29,49 @@ namespace DtekSheduleSendTg.DTEK
             return true;
         }
 
-        public bool IsNoSendPicture2Group(long group)
-            => noSendSheduleGroup.Any(x => x == group);
-
-        public string GetFullPictureDescription(long group, string firsttLine)
+        public string GetFullPictureDescription(long group, string firsttLine, string linePatern, string leadingSymbol)
         {
-            var description = sheduleGroupDescription?.FirstOrDefault(x => x.Group == group)?.SheduleString;
+            var sheduleString = CurrentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
 
-            var sb = new StringBuilder(firsttLine);
-            if (!string.IsNullOrEmpty(description))
-            {
-                sb.AppendLine();
-                sb.AppendLine("Відключення:");
-                sb.Append(description.MarkBold());
-            }
-
-            return sb.ToString();
-        }
-
-        private List<int> GetNoSendSheduleGroup(IEnumerable<SheduleData> current, IEnumerable<SheduleData> prev)
-        {
-            logger.LogInformation("Start GetNoSendSheduleGroup");
-
-            var result = new List<int>();
-            try
-            {
-                foreach (var sheduleCurrent in current)
-                {
-                    var shedulePrev = prev.FirstOrDefault(x => x.Group == sheduleCurrent.Group);
-
-                    if (string.Equals(
-                                    shedulePrev?.SheduleString,
-                                    sheduleCurrent.SheduleString,
-                                    StringComparison.InvariantCultureIgnoreCase))
-                        result.Add(sheduleCurrent.Group);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "GetNoSendSheduleGroup");
-            }
-
-            return result;
-        }
-
-        private IEnumerable<SheduleData> GetSheduleDescription(IEnumerable<SheduleData> shedules)
-        {
-            var result = new List<SheduleData>();
+            var sb = new StringBuilder();
+            sb.AppendLine(firsttLine);
 
             try
             {
-                foreach (var sheduleCurrent in shedules)
+                var h = 0;
+                bool isOpenD = false;
+                var startPeriod = 0;
+
+                foreach (var s in sheduleString)
                 {
-                    var sb = new StringBuilder();
-                    var h = 0;
-                    bool isOpenD = false;
-                    foreach (var s in sheduleCurrent.SheduleString)
+                    if (s == '0' && !isOpenD)
                     {
-                        if (s == '0' && !isOpenD)
-                        {
-                            sb.Append($"    {GetFormatedH(h)}:00 - ");
-                            isOpenD = true;
-                        }
-
-                        if (s == '1' && isOpenD)
-                        {
-                            sb.AppendLine( $"{GetFormatedH(h)}:00");
-                            isOpenD = false;
-                        }
-
-                        h++;
+                        startPeriod = h;
+                        isOpenD = true;
                     }
 
-                    if (isOpenD)
-                        sb.AppendLine("24:00");
+                    if (s == '1' && isOpenD)
+                    {
+                        sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, h));
+                        isOpenD = false;
+                    }
 
-                    if (sb.Length == 0)
-                        sb.Append("    - не планується");
-
-                    result.Add(new SheduleData() { Group = sheduleCurrent.Group, SheduleString = sb.ToString() });
+                    h++;
                 }
 
+                if (isOpenD)
+                    sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, 24));
+
+                if (sb.Length == 0)
+                    sb.Append("    - не планується");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "GetSheduleDescription");
             }
-            return result;
-        }
 
-        private string GetFormatedH(int h)
-            => h < 10 ? $" {h}" : h.ToString();
+            return sb.ToString();
+        }
 
         private IEnumerable<SheduleData> GetShedulesFromFile(string file)
         {
@@ -180,7 +123,6 @@ namespace DtekSheduleSendTg.DTEK
                     average += (((colorPixel.R + colorPixel.B + colorPixel.G) / 3.0) / 9.0);
                 }
 
-            
             return (int)average;
         }
     }

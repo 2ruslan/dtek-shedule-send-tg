@@ -11,5 +11,8 @@
         public bool IsSendTextMessage { get; set; }
 
         public bool IsNoSendPictureDescription { get; set; }
+
+        public string PowerOffLinePattern { get; set; }
+        public string PowerOffLeadingSymbol { get; set; }
     }
 }

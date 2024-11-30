@@ -60,16 +60,10 @@ namespace DtekSheduleSendTg
             {
                 try
                 {
-                    /*
-                    if (dtekShedule.IsNoSendPicture2Group(chat.Group))
-                    {
-                        logger.LogInformation("IsNoSendPicture2Group {0}", chat.Group);
-                        continue;
-                    }
-                    */
+                   
                     var description = chat.IsNoSendPictureDescription 
                         ? string.Empty
-                        : dtekShedule.GetFullPictureDescription(chat.Group, chat.Caption);
+                        : dtekShedule.GetFullPictureDescription(chat.Group, chat.Caption, chat.PowerOffLinePattern, chat.PowerOffLeadingSymbol);
 
                     var id = await bot.SendPicture(chat.Id, fileName, description);
 

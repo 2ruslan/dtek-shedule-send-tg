@@ -13,6 +13,6 @@ namespace DtekSheduleSendTg.Data.Shedule
                 : new List<SheduleData>();
 
         public void StoreShedule(IEnumerable<SheduleData> shedules)
-            => File.WriteAllText(SheduleFile, JsonSerializer.Serialize(shedules));
+            => File.WriteAllText(SheduleFile, JsonSerializer.Serialize(shedules, new JsonSerializerOptions { WriteIndented = true }));
     }
 }
