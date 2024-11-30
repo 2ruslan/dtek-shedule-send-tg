@@ -23,7 +23,7 @@ namespace Common
         }
 
         private static string GetFormatedH(int h, string leadingSymbol)
-            => h < 10 ? $"{leadingSymbol}{h}" : h.ToString();
+            => h < 10 ? $"{leadingSymbol}{h}:00" : $"{h}:00";
 
 
         public static string FixHtml2Telegram(this string str)
