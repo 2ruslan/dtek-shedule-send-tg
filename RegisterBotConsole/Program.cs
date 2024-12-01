@@ -3,32 +3,14 @@ using Common;
 using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using RegisterBotConsole;
-using RegisterBotConsole.Data.ChatInfo;
-using System.Security.Cryptography.Xml;
 using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
-const string StartMessage = 
-"Для регістрації відправки розкладу відключень відправте повідомлення з" + "\r\n" +
-        "  ід групи (можна скористатися ботом @userinfobot)" + "\r\n" +
-        "  латинську літеру:" + "\r\n" +
-        "    k - для Києва, " + "\r\n" +
-        "    r - для Київської області " + "\r\n" +
-        "    d - для Дніпра " + "\r\n" +
-        "    o - для Одеси " + "\r\n" +
-        "  номером групи відключень (1-6) або латинську літеру d для видалення свого чату з відправки розкладу." + "\r\n" +
-        "Ці дані повинні бути розділені пробілом." + "\r\n" +
-        "Також є можливість використовувати додаткові параметри :" + "\r\n" +
-        "  +delold - для видалення попереднього повідомлення з розкладом" + "\r\n" +
-        "  +addtext - для відправки текстових інформаційних повідомлень від НЕК Укренерго" + "\r\n" +
-        "  +piconly - для відправки графіка без тексту" + "\r\n" +
-        "Приклад повідомлення для отримання графіків відключень в київській області по 3 групі: -123456789 r 3" + "\r\n" +
-        "Приклад повідомлення для видалення в київській області : -123456789 r d" + "\r\n" +
-        "Приклад повідомлення для з видалення попереднього повідомлення з розкладом для 2 групи: -123456789 r 2 +delold" + "\r\n" +
-        "Приклад повідомлення для з видалення попереднього повідомлення з розкладом для 2 групи і відправкою інформаційних повідомлень від НЕК Укренерг: -123456789 r 2 +delold+addtext"
-        ;
+string workDir = Path.Combine(Environment.CurrentDirectory, "WorkDir");
+
 
 ILogger logger = LoggerFactory
                       .Create(builder => builder
@@ -41,6 +23,9 @@ var kyivChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["K
 var kyivRegionChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["KyivRegionChatsFilePath"];
 var dniproRegionChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["DnyproChatsFilePath"];
 var odesaChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["OdesaChatsFilePath"];
+
+var adminUserId = int.Parse(System.Configuration.ConfigurationManager.AppSettings["AdminUserId"]);
+
 
 var cancellationToken = new CancellationTokenSource().Token;
 
@@ -93,14 +78,26 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Up
             Console.WriteLine("=====================================================");
 
             string outMessage;
+            if (message.From.Id == adminUserId && message.ForwardOrigin != null)
+            {
+                var startMessage = new StartMessage(workDir);
+                await startMessage.Set(message);
 
-            if (message.Text.ToLower().EndsWith("start"))
-                outMessage = StartMessage;
+                return;
+            }
+            else if (message.Text.ToLower().EndsWith("start") || message.Text.ToLower().EndsWith("help") || message.Text.ToLower().Equals("?"))
+            {
+                var startMessage = new StartMessage(workDir);
+                var msg = await startMessage.Get();
+                await bot.SendMessage(message.Chat.Id, msg.Text, parseMode: ParseMode.None, entities: msg.Entities);
+
+                return;
+            }
             else
             {
                 try
                 {
-                    outMessage = await HandleMessage(message.Text, message.From.Id);
+                    outMessage = await HandleMessage(message);
                     logger.LogInformation(outMessage);
                 }
                 catch (Exception ex)
@@ -124,23 +121,34 @@ async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, C
     logger.LogError(exception, "HandleErrorAsync");
 }
 
-async Task<string> HandleMessage(string message, long userid)
+async Task<string> HandleMessage(Message msg)
 {
+    var message = msg.Text;
+    var userid = msg.From.Id;
+
     var paser = new Paser();
     var paresrResult = await paser.Parse(message);
 
     if (paresrResult.HasError)
         return paresrResult.Error;
 
-    var rightsError = await CheckRights(paresrResult.Id.Value, userid);
-    if (!string.IsNullOrEmpty(rightsError))
-        return rightsError;
+    long GroupId;
+    if (paresrResult.IsThisChatBotId)
+        GroupId = msg.Chat.Id;
+    else
+    {
+        GroupId = paresrResult.Id.Value;
+
+        var rightsError = await CheckRights(GroupId, userid);
+        if (!string.IsNullOrEmpty(rightsError))
+            return rightsError;
+    }
 
     var file = ResolveFileName(paresrResult.Region);
     if (string.IsNullOrEmpty(file))
         return "Невідомий регіон";
 
-    var chatSettings = new ChatSettings(file, paresrResult.Id.Value);
+    var chatSettings = new ChatSettings(file, GroupId);
 
     if (paresrResult.IsDeleteChatCommand)
     {

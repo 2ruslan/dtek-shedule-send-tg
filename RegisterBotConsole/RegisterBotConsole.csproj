@@ -20,4 +20,10 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="WorkDir\Help.txt">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

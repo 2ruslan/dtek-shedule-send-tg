@@ -4,6 +4,7 @@
     {
         readonly char[] separators = { '\t', ' ', '\r', '\n', ',', ';' };
         readonly string[] types = { "k", "r", "d", "o" };
+        const string ThisChat = "this";
         const string DelOldCommand = "+delold";
         const string AddTextCommand = "+addtext";
         const string PictureOnlyCommand = "+piconly";
@@ -12,14 +13,18 @@
         {
             var result = new PaserResult();
 
-            var parts = (message ?? string.Empty).Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var parts = (message ?? string.Empty).Split(separators, 4, StringSplitOptions.RemoveEmptyEntries);
 
             if (parts.Length < 3)
                 return GetError(result, "Невірний формат повідомлення (повинен скаладатися з трьох(або більше) частин).");
 
             #region chatId
-            long chatId;
-            if (!long.TryParse(parts[0].Trim(), out chatId) || chatId > 0)
+            long chatId = 0;
+            if (parts[0].Trim() == ThisChat)
+            {
+                result.IsThisChatBotId = true; 
+            }
+            else if (!long.TryParse(parts[0].Trim(), out chatId) || chatId > 0)
                 return GetError(result, "Перший параметр повинен бути ід групи (від`ємне цифрове значення)");
 
             result.Id = chatId;
@@ -44,14 +49,7 @@
             }
             else if (part3 == "fl" || part3 == "pt" || part3 == "ls")
             {
-                var str = message
-                    .Replace(parts[0], string.Empty).TrimStart()
-                    .Replace(parts[1], string.Empty).TrimStart()
-                    .Replace(parts[2], string.Empty)
-                    ;
-
-                if (str.Length > 0)
-                    str = str.Substring(1);
+                var str = parts[3].Replace("_", " ");
 
                 if (part3 == "fl")
                 {

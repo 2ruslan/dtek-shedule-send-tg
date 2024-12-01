@@ -9,7 +9,7 @@ namespace DtekSheduleSendTg
     public class TelegramBot(ILogger logger, string botToken) : ITelegramBot
     {
         private const int WAIT_BEFORE_SEND_TEXT = 1;
-        private const int WAIT_BEFORE_SEND_PICTURE = 3;
+        private const int WAIT_BEFORE_SEND_PICTURE = 1;
 
         private readonly TelegramBotClient bot = new TelegramBotClient(botToken);
 

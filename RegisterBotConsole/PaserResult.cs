@@ -11,7 +11,8 @@
 
 
         public long? Id { get; set; }
-        
+        public bool IsThisChatBotId { get; set; }
+
         public int? Group { get; set; }
 
         public bool? IsDeletePrevMessage { get; set; }
