@@ -149,10 +149,12 @@ async Task<string> HandleMessage(Message msg)
         return "Невідомий регіон";
 
     var chatSettings = new ChatSettings(file, GroupId);
+    var sb = new StringBuilder();
 
     if (paresrResult.IsDeleteChatCommand)
     {
         chatSettings.RemoveChat();
+        sb.Append("Успішно видалено.");
     }
     else
     {
@@ -176,26 +178,25 @@ async Task<string> HandleMessage(Message msg)
 
         if (paresrResult.HasPowerOffLinePattern)
             chatSettings.PowerOffLinePattern = paresrResult.PowerOffLinePattern;
-    }
 
-    var sb = new StringBuilder();
 
-    if (chatSettings.Group == 0)
-        sb.Append("Схоже невірно вказаний другий параметр, перевірте літеру що вказує на регіон.");
-    else
-    {
-        chatSettings.ApllyChanges();
-
-        sb.Append("Успішно виконано.");
-
-        if (paresrResult.HasCaption || paresrResult.HasPowerOffLeadingSymbol || paresrResult.HasPowerOffLinePattern)
+        if (chatSettings.Group == 0)
+            sb.Append("Схоже невірно вказаний другий параметр, перевірте літеру що вказує на регіон.");
+        else
         {
-            sb.AppendLine("Приклад підпису:");
-            sb.AppendLine(chatSettings.Caption);
-            sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
-            sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
+            chatSettings.ApllyChanges();
+
+            sb.Append("Успішно виконано.");
+
+            if (paresrResult.HasCaption || paresrResult.HasPowerOffLeadingSymbol || paresrResult.HasPowerOffLinePattern)
+            {
+                sb.AppendLine("Приклад підпису:");
+                sb.AppendLine(chatSettings.Caption);
+                sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
+                sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
+            }
         }
-    }  
+    }
 
     return sb.ToString();
 }

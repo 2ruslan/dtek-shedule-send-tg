@@ -15,8 +15,15 @@ namespace DtekSheduleSendTg
         private static ILogger logger = LoggerFactory
                                             .Create(builder => builder
                                                             .AddConsole()
-                                                            .AddFile("app.log", append: true)
-                                            ).CreateLogger("DtekSheduleSendTg");
+                                                            .AddFile("app.log"
+                                                            , fileLoggerOpts =>
+                                                            {
+                                                                fileLoggerOpts.Append = true;
+                                                                fileLoggerOpts.MaxRollingFiles = 10;
+                                                                fileLoggerOpts.FileSizeLimitBytes = 500 * 1024;
+                                                            }
+                                                )
+                                            ).CreateLogger("DST");
         static Program()
             => AppDomain.CurrentDomain.UnhandledException += UnhandledException;
 

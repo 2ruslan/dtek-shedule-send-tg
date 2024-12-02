@@ -55,7 +55,7 @@ namespace DtekSheduleSendTg.DTEK
 
             logger.LogInformation("end GetPictureUrl");
 
-            return result;
+            return result.Distinct();
         }
 
         private string GetInfoText(string source)

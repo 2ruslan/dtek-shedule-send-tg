@@ -8,8 +8,8 @@ namespace DtekSheduleSendTg
 {
     public class TelegramBot(ILogger logger, string botToken) : ITelegramBot
     {
-        private const int WAIT_BEFORE_SEND_TEXT = 1;
-        private const int WAIT_BEFORE_SEND_PICTURE = 1;
+        private const int WAIT_BEFORE_SEND_TEXT = 200;
+        private const int WAIT_BEFORE_SEND_PICTURE = 200;
 
         private readonly TelegramBotClient bot = new TelegramBotClient(botToken);
 
@@ -25,7 +25,7 @@ namespace DtekSheduleSendTg
             {
                 logger.LogInformation("Try Send {0} to {1}", message, chatId);
 
-                Thread.Sleep(WAIT_BEFORE_SEND_TEXT * 1000);
+                Thread.Sleep(WAIT_BEFORE_SEND_TEXT);
                 
                 try
                 {
@@ -82,7 +82,7 @@ namespace DtekSheduleSendTg
                     ? InputFile.FromStream(System.IO.File.OpenRead(fileName))
                     : InputFile.FromFileId(fileId);
 
-                Thread.Sleep(WAIT_BEFORE_SEND_PICTURE * 1000);
+                Thread.Sleep(WAIT_BEFORE_SEND_PICTURE);
                 
                 try
                 {
