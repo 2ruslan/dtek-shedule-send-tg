@@ -22,8 +22,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="WorkDir\Help.txt">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  <None Update="WorkDir\Help.json">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
 </Project>

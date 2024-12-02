@@ -32,12 +32,16 @@ namespace RegisterBotConsole
             ApllyChanges();
         }
 
-        public void SetGroup(int group)
+        public int Group
         {
-            if (chat.Group != group)
-            { 
-                chat.Group = group;
-                chat.Caption = $"🗓️Графік відключень, {group} група";
+            get => chat.Group;
+            set
+            {
+                if (chat.Group != value)
+                {
+                    chat.Group = value;
+                    chat.Caption = $"🗓️Графік відключень, {value} група";
+                }
             }
         }
 

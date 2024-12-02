@@ -157,7 +157,7 @@ async Task<string> HandleMessage(Message msg)
     else
     {
         if (paresrResult.Group.HasValue)
-            chatSettings.SetGroup(paresrResult.Group.Value);
+            chatSettings.Group = paresrResult.Group.Value;
 
         if (paresrResult.IsDeletePrevMessage.HasValue)
             chatSettings.IsDeletePrevMessage = paresrResult.IsDeletePrevMessage.Value;
@@ -178,18 +178,25 @@ async Task<string> HandleMessage(Message msg)
             chatSettings.PowerOffLinePattern = paresrResult.PowerOffLinePattern;
     }
 
-    chatSettings.ApllyChanges();
+    var sb = new StringBuilder();
 
-    var sb = new StringBuilder("Успішно виконано.");
-
-    if (paresrResult.HasCaption || paresrResult.HasPowerOffLeadingSymbol || paresrResult.HasPowerOffLinePattern)
+    if (chatSettings.Group == 0)
+        sb.Append("Схоже невірно вказаний другий параметр, перевірте літеру що вказує на регіон.");
+    else
     {
-        sb.AppendLine("Приклад підпису:");
-        sb.AppendLine(chatSettings.Caption);
-        sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
-        sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
-    }
-        
+        chatSettings.ApllyChanges();
+
+        sb.Append("Успішно виконано.");
+
+        if (paresrResult.HasCaption || paresrResult.HasPowerOffLeadingSymbol || paresrResult.HasPowerOffLinePattern)
+        {
+            sb.AppendLine("Приклад підпису:");
+            sb.AppendLine(chatSettings.Caption);
+            sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
+            sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
+        }
+    }  
+
     return sb.ToString();
 }
 
