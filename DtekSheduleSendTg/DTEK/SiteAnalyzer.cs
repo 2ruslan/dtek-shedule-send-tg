@@ -1,4 +1,5 @@
-﻿using DtekSheduleSendTg.Abstraction;
+﻿using Common;
+using DtekSheduleSendTg.Abstraction;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using Telegram.Bot.Types;
@@ -79,7 +80,9 @@ namespace DtekSheduleSendTg.DTEK
                         if (string.IsNullOrEmpty(m.Value))
                             return string.Empty;
 
-                        if (string.Equals(m.Value, lastMessage, StringComparison.InvariantCultureIgnoreCase))
+                        if (string.Equals(m.Value.DeleteAllTags().DeleteWhiteSpace(), 
+                                          lastMessage.DeleteAllTags().DeleteWhiteSpace(), 
+                                          StringComparison.InvariantCultureIgnoreCase))
                             return string.Empty;
                                                 
                         repository.StoreLastInfoMessage(m.Value);

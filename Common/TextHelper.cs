@@ -55,5 +55,8 @@ namespace Common
 
         public static string DeleteAllTags(this string str)
             => Regex.Replace(str, "<.*?>", string.Empty);
+
+        public static string DeleteWhiteSpace(this string str)
+            => new string(str.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray());
     }
 }
