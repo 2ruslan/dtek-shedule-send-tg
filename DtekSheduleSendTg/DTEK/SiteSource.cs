@@ -35,6 +35,8 @@ namespace DtekSheduleSendTg.DTEK
 
             logger.LogInformation("Start StorePicFromUrl");
 
+           
+
             using WebClient client = new();
 
             var fileName = fullUrl.Split('/').LastOrDefault();
@@ -47,12 +49,29 @@ namespace DtekSheduleSendTg.DTEK
                 Directory.CreateDirectory(dir);
 
             fileName = Path.Combine(dir, fileName);
+            var tagFileName = $"{fileName}.tag";
+
+            var tag = GetRemoteFileETag(fullUrl);
+            logger.LogInformation("StorePicFromUrl tag {0}", tag);
 
             if (File.Exists(fileName))
             {
                 logger.LogInformation("File exists {0}", fileName);
-                return string.Empty;
+                logger.LogInformation("Check tag {0}", tagFileName);
+                if (File.Exists(tagFileName))
+                { 
+                    var prevTag = File.ReadAllText(tagFileName);
+                    if (string.Equals(prevTag, tag))
+                        return string.Empty;
+                    else
+                    {
+                        File.Delete(fileName);
+                        File.Delete(tagFileName);
+                    }
+                }
             }
+
+            File.WriteAllText(tagFileName, tag);
 
             try
             {
@@ -70,6 +89,17 @@ namespace DtekSheduleSendTg.DTEK
             logger.LogInformation("End StorePicFromUrl");
 
             return fileName;
+        }
+
+        static string GetRemoteFileETag(string url)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "HEAD";
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            {
+                return response.Headers["ETag"];
+            }
         }
 
     }

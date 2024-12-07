@@ -8,39 +8,25 @@ using System.Text;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public class DtekShedule(ILogger logger, ISheduleRepository repository) : IDtekShedule
+    public class DtekShedule(ILogger logger) : IDtekShedule
     {
         public string GetSchedule(long group)
             => currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString;
         
-
         private  IList<SheduleData> currentShedule = new List<SheduleData>();
-        private IEnumerable<SheduleData> PrevShedule = new List<SheduleData>();
 
         public bool AnalyzeFile(string file)
         {
             try
             {
-                PrevShedule = repository.GetShedule();
-
                 currentShedule = GetShedulesFromFile(file);
-
-                repository.StoreShedule(currentShedule);
             }
             catch (Exception ex)
             {
-                repository.StoreShedule(new List<SheduleData>());
                 logger.LogError(ex, "AnalyzeFile");
                 return false;
             }
             return true;
-        }
-
-        public bool IsScheduleChanged(long group)
-        {
-            var curent  = currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
-            var prev    = PrevShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
-            return !string.Equals(curent, prev, StringComparison.InvariantCultureIgnoreCase);
         }
 
         public string GetFullPictureDescription(long group, string firsttLine, string linePatern, string leadingSymbol)

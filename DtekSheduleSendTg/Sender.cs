@@ -26,7 +26,8 @@ namespace DtekSheduleSendTg
                 await SendText(siteInfo.Text);
             
             foreach(var file in siteInfo.PIctureFiles)
-                await SendPicture(file);
+                if (!string.IsNullOrEmpty(file.FileName))
+                    await SendPicture(file);
             
             logger.LogInformation("End CheckAndSend");
         }
@@ -144,7 +145,10 @@ namespace DtekSheduleSendTg
         {
             var lastMsgId = sendedPictInfos
                                 .Where(x => x.OnDate == onDt)
-                                .Max(x => x.MsgId);
+                                .Select(x => x.MsgId) 
+                                .DefaultIfEmpty()
+                                .Max()
+                                ;
 
             return sendedPictInfos.FirstOrDefault(x => x.MsgId == lastMsgId);
         }

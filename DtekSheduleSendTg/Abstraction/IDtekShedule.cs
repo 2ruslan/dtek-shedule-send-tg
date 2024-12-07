@@ -9,7 +9,6 @@ namespace DtekSheduleSendTg.Abstraction
         
         public string GetFullPictureDescription(long group, string firsttLine, string linePatern, string leadingSymbol);
         
-        public bool IsScheduleChanged(long group);
         public string GetSchedule(long group);
     }
 }
