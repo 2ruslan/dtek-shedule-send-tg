@@ -2,7 +2,6 @@
 using DtekSheduleSendTg.Abstraction;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
-using Telegram.Bot.Types;
 
 namespace DtekSheduleSendTg.DTEK
 {
@@ -25,38 +24,47 @@ namespace DtekSheduleSendTg.DTEK
 
             var pictureUrls = GetPictureUrl(source);
             
-            var files = new List<string>();
             foreach (var pictureUrl in pictureUrls)
             {
-                var fileName = siteSource.StorePicFromUrl(pictureUrl);
-                if (!string.IsNullOrEmpty(fileName))
-                    files.Add(fileName);
-                    
+                var fileName = siteSource.StorePicFromUrl(pictureUrl.Url);
+                pictureUrl.FileName = fileName;
             }
-            result.PIctureFiles = files;
+
+            result.PIctureFiles = pictureUrls;
 
             return result;
         }
 
-        private IEnumerable<string> GetPictureUrl(string source)
+        private IEnumerable<PIctureFileInfo> GetPictureUrl(string source)
         {
-            var result = new List<string>();
+            var result = new List<PIctureFileInfo>();
+
             logger.LogInformation("Start GetPictureUrl");
 
             var m = Regex.Matches(source, shedilePicRegex);
 
             logger.LogInformation("GetPictureUrl count: {0}", m.Count);
 
-
+            int daysAdd = 0;
             foreach (var m2 in m)
             {
-                logger.LogInformation(m2.ToString());
-                result.Add(m2.ToString());
+                var fileName = m2.ToString();
+                logger.LogInformation(fileName);
+
+                if (!result.Any(x => string.Equals(x.Url, fileName)))
+                { 
+                    result.Add(
+                        new PIctureFileInfo() {
+                            Url = fileName,
+                            OnDate = DateOnly.FromDateTime(DateTime.Now.AddDays(daysAdd++))
+                        }
+                    );
+                }
             }
 
             logger.LogInformation("end GetPictureUrl");
 
-            return result.Distinct();
+            return result;
         }
 
         private string GetInfoText(string source)

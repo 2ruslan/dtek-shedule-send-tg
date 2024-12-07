@@ -10,15 +10,22 @@ namespace DtekSheduleSendTg.DTEK
 {
     public class DtekShedule(ILogger logger, ISheduleRepository repository) : IDtekShedule
     {
-        private IEnumerable<SheduleData> CurrentShedule = new List<SheduleData>();
+        public string GetSchedule(long group)
+            => currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString;
+        
+
+        private  IList<SheduleData> currentShedule = new List<SheduleData>();
+        private IEnumerable<SheduleData> PrevShedule = new List<SheduleData>();
 
         public bool AnalyzeFile(string file)
         {
             try
             {
-                CurrentShedule = GetShedulesFromFile(file);
+                PrevShedule = repository.GetShedule();
 
-                repository.StoreShedule(CurrentShedule);
+                currentShedule = GetShedulesFromFile(file);
+
+                repository.StoreShedule(currentShedule);
             }
             catch (Exception ex)
             {
@@ -29,9 +36,16 @@ namespace DtekSheduleSendTg.DTEK
             return true;
         }
 
+        public bool IsScheduleChanged(long group)
+        {
+            var curent  = currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
+            var prev    = PrevShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
+            return !string.Equals(curent, prev, StringComparison.InvariantCultureIgnoreCase);
+        }
+
         public string GetFullPictureDescription(long group, string firsttLine, string linePatern, string leadingSymbol)
         {
-            var sheduleString = CurrentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
+            var sheduleString = currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
 
             var sb = new StringBuilder();
             
@@ -74,7 +88,7 @@ namespace DtekSheduleSendTg.DTEK
             return sb.ToString();
         }
 
-        private IEnumerable<SheduleData> GetShedulesFromFile(string file)
+        private IList<SheduleData> GetShedulesFromFile(string file)
         {
             logger.LogInformation("Start GetShedules");
 

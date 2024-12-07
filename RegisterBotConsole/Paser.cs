@@ -5,9 +5,11 @@
         readonly char[] separators = { '\t', ' ', '\r', '\n', ',', ';' };
         readonly string[] types = { "k", "r", "d", "o" };
         const string ThisChat = "this";
+
         const string DelOldCommand = "+delold";
         const string AddTextCommand = "+addtext";
         const string PictureOnlyCommand = "+piconly";
+        const string SendWhenScheduleChandedComand = "+nshonly";
 
         public async Task<PaserResult> Parse(string message) 
         {
@@ -47,6 +49,10 @@
                 result.IsDeleteChatCommand = true;
                 return result;
             }
+            else if (part3 == "info")
+            {
+                result.IsGetInfo = true;
+            }
             else if (part3 == "fl" || part3 == "pt" || part3 == "ls")
             {
                 var str = parts[3].Replace("_", " ");
@@ -66,7 +72,7 @@
                     result.HasPowerOffLeadingSymbol = true;
                     result.PowerOffLeadingSymbol = str == "del" ? string.Empty : str;
                 }
-
+         
                 return result;
             }
             else if (!int.TryParse(parts[2].Trim(), out group) || group < 1 || group > 6)
@@ -79,8 +85,9 @@
             result.IsDeletePrevMessage = (message ?? string.Empty).Contains(DelOldCommand);
             result.IsSendTextMessage = (message ?? string.Empty).Contains(AddTextCommand);
             result.IsNoSendPictureDescription = (message ?? string.Empty).Contains(PictureOnlyCommand);
+            result.IsSendWhenChanged = (message ?? string.Empty).Contains(SendWhenScheduleChandedComand);
             #endregion  addCommands
-            
+
             return result;
         }
 

@@ -1,5 +1,4 @@
-﻿
-namespace DtekSheduleSendTg.Data.ChatInfo
+﻿namespace Common.Data.ChatInfo
 {
     public record ChatInfo
     {
@@ -11,6 +10,8 @@ namespace DtekSheduleSendTg.Data.ChatInfo
         public bool IsSendTextMessage { get; set; }
 
         public bool IsNoSendPictureDescription { get; set; }
+
+        public bool IsSendWhenPictChanged { get; set; }
 
         public string PowerOffLinePattern { get; set; }
         public string PowerOffLeadingSymbol { get; set; }

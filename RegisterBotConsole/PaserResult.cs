@@ -20,6 +20,10 @@
 
         public bool? IsNoSendPictureDescription { get; set; }
 
+        public bool? IsSendWhenChanged { get; set; }
+
+        public bool IsGetInfo { get; set; }
+
         public bool HasCaption { get; set; }
         public string Caption { get; set; }
 

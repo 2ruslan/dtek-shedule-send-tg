@@ -1,8 +1,9 @@
-﻿using System.Text.Json;
+﻿using Common.Abstraction;
+using System.Text.Json;
 
-namespace RegisterBotConsole.Data.ChatInfo
+namespace Common.Data.ChatInfo
 {
-    public class ChatInfoRepository (string chatInfoFile)
+    public class ChatInfoRepository(string chatInfoFile) : IChatInfoRepository
     {
         public IList<ChatInfo> GetChatInfo()
             => JsonSerializer.Deserialize<List<ChatInfo>>(File.ReadAllText(chatInfoFile));

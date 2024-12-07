@@ -1,4 +1,5 @@
-﻿using RegisterBotConsole.Data.ChatInfo;
+﻿using Common.Data.ChatInfo;
+
 
 namespace RegisterBotConsole
 {
@@ -63,6 +64,12 @@ namespace RegisterBotConsole
             set { chat.IsNoSendPictureDescription = value; }
         }
 
+        public bool IsSendWhenPictChanged
+        {
+            get { return chat.IsSendWhenPictChanged; }
+            set { chat.IsSendWhenPictChanged = value; }
+        }
+        
         public string Caption
         {
             get { return chat.Caption; }

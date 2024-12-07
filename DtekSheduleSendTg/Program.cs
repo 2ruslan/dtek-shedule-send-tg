@@ -1,4 +1,5 @@
-﻿using DtekSheduleSendTg.Abstraction;
+﻿using Common;
+using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.ChatInfo;
 using DtekSheduleSendTg.Data.Shedule;
 using DtekSheduleSendTg.Data.TextInfo;
@@ -48,7 +49,7 @@ namespace DtekSheduleSendTg
             var site = GetRegionConfigValue("Site", region);
             var shedilePicRegex = GetRegionConfigValue("SchedulePicRegex", region); 
 
-            var chatInfoRepository = new ChatInfoRepository(region);
+            var chatInfoRepository = new ChatInfoRepositoryApp(region);
             var sheduleRepository = new SheduleRepository(region);
             var textInfoRepository = new TextInfoRepository(region);
             var workInfoRepository = new WorkInfoRepository(region);

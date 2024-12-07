@@ -4,25 +4,28 @@ using Microsoft.Extensions.Logging;
 using NReco.Logging.File;
 using RegisterBotConsole;
 using System.Text;
+using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 string workDir = Path.Combine(Environment.CurrentDirectory, "WorkDir");
 
-
 ILogger logger = LoggerFactory
-                      .Create(builder => builder
-                                             .AddConsole()
-                                             .AddFile("app.log", append: true)
-                             ).CreateLogger("DtekSheduleSendTg");
+                                            .Create(builder => builder
+                                                            .AddConsole()
+                                                            .AddFile("app.log"
+                                                            , fileLoggerOpts =>
+                                                            {
+                                                                fileLoggerOpts.Append = true;
+                                                                fileLoggerOpts.MaxRollingFiles = 10;
+                                                                fileLoggerOpts.FileSizeLimitBytes = 500 * 1024;
+                                                            }
+                                                )
+                                            ).CreateLogger("DSB");
+
 
 var botToken = System.Configuration.ConfigurationManager.AppSettings["BotToken"];
-var kyivChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["KyivChatsFilePath"];
-var kyivRegionChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["KyivRegionChatsFilePath"];
-var dniproRegionChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["DnyproChatsFilePath"];
-var odesaChatsFilePath = System.Configuration.ConfigurationManager.AppSettings["OdesaChatsFilePath"];
+
 
 var adminUserId = int.Parse(System.Configuration.ConfigurationManager.AppSettings["AdminUserId"]);
 
@@ -89,7 +92,7 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Up
             {
                 var startMessage = new StartMessage(workDir);
                 var msg = await startMessage.Get();
-                await bot.SendMessage(message.Chat.Id, msg.Text, parseMode: ParseMode.None, entities: msg.Entities);
+                await bot.SendMessage(message.Chat.Id, msg.Text, parseMode: Telegram.Bot.Types.Enums.ParseMode.None, entities: msg.Entities);
 
                 return;
             }
@@ -121,7 +124,7 @@ async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, C
     logger.LogError(exception, "HandleErrorAsync");
 }
 
-async Task<string> HandleMessage(Message msg)
+async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
 {
     var message = msg.Text;
     var userid = msg.From.Id;
@@ -144,17 +147,20 @@ async Task<string> HandleMessage(Message msg)
             return rightsError;
     }
 
-    var file = ResolveFileName(paresrResult.Region);
-    if (string.IsNullOrEmpty(file))
-        return "Невідомий регіон";
+    var file = ChatFiles.ResolveFileName(paresrResult.Region);
 
     var chatSettings = new ChatSettings(file, GroupId);
     var sb = new StringBuilder();
 
-    if (paresrResult.IsDeleteChatCommand)
+
+    if (paresrResult.IsGetInfo)
+    {
+        return JsonSerializer.Serialize(chatSettings, new JsonSerializerOptions { WriteIndented = true });
+    }
+    else if (paresrResult.IsDeleteChatCommand)
     {
         chatSettings.RemoveChat();
-        sb.Append("Успішно видалено.");
+        return "Успішно видалено.";
     }
     else
     {
@@ -170,6 +176,9 @@ async Task<string> HandleMessage(Message msg)
         if (paresrResult.IsNoSendPictureDescription.HasValue)
             chatSettings.IsNoSendPictureDescription = paresrResult.IsNoSendPictureDescription.Value;
 
+        if (paresrResult.IsSendWhenChanged.HasValue)
+            chatSettings.IsSendWhenPictChanged = paresrResult.IsSendWhenChanged.Value;
+        
         if (paresrResult.HasCaption)
             chatSettings.Caption = paresrResult.Caption;
 
@@ -191,7 +200,7 @@ async Task<string> HandleMessage(Message msg)
             if (paresrResult.HasCaption || paresrResult.HasPowerOffLeadingSymbol || paresrResult.HasPowerOffLinePattern)
             {
                 sb.AppendLine("Приклад підпису:");
-                sb.AppendLine(chatSettings.Caption);
+                sb.AppendLine(TextHelper.GetFomatedFirstLine(chatSettings.Caption, DateOnly.FromDateTime(DateTime.Now)));
                 sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
                 sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
             }
@@ -217,16 +226,3 @@ async Task<string> CheckRights(long chatId, long userid)
     return string.Empty;
 }
 
-string ResolveFileName(string region)
-{
-    if (region == "k")
-        return kyivChatsFilePath;
-    else if (region == "r")
-        return kyivRegionChatsFilePath;
-    else if (region == "d")
-        return dniproRegionChatsFilePath;
-    else if (region == "o")
-        return odesaChatsFilePath;
-    else
-        return string.Empty;
-}

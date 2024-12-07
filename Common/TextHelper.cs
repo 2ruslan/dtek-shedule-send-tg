@@ -4,6 +4,9 @@ namespace Common
 {
     public static class TextHelper
     {
+        public static string GetFomatedFirstLine(string patern, DateOnly dt)
+            => string.Format(patern.Replace("{d}", "{0}"), dt.ToString("dd.MM.yyyy"));
+        
         public static string GetFomatedLine(string patern, string leadingSymbol, int s, int f)
         {
             var h = f - s;
