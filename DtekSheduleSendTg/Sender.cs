@@ -67,14 +67,12 @@ namespace DtekSheduleSendTg
                             ? workInfo.SendedPictInfo[chat.Id]
                             : (workInfo.SendedPictInfo[chat.Id] = new());
 
-                bool IsSendPict = true;
+                bool IsSendPict = !sendedPictInfo.Exists(x => string.Equals(x.FileName, fileInfo.FileName));
 
-                if (chat.IsSendWhenPictChanged)
+                if (IsSendPict && chat.IsSendWhenPictChanged)
                 {
                     var prevInfo = GetInfoOnDate(sendedPictInfo, fileInfo.OnDate);
-                    IsSendPict = prevInfo is null ||
-                                 !string.Equals(prevInfo.ScheduleString, currentSh) ||
-                                 prevInfo.OnDate < DateOnly.FromDateTime(DateTime.Now);
+                    IsSendPict = prevInfo is null || !string.Equals(prevInfo.ScheduleString, currentSh);
                 }
 
                 if (IsSendPict)
@@ -96,22 +94,31 @@ namespace DtekSheduleSendTg
                                     MsgId = id,
                                     SendDt = DateTime.Now,
                                     Url = fileInfo.Url,
+                                    FileName = fileInfo.FileName,
                                     OnDate = fileInfo.OnDate,
                                     ScheduleString = currentSh
                                 });
-
-                        foreach (var msgId in GetMsgIdForDelete(sendedPictInfo))
-                        {
-                            if (chat.IsDeletePrevMessage)
-                                await bot.DeleteMessage(chat.Id, msgId);
-                            sendedPictInfo.Remove(sendedPictInfo.Find(x => x.MsgId == msgId));
-                        }
-
                     }
                     catch (Exception ex)
                     {
                         logger.LogError(ex, "Error SendPicture to {0}", chat.Id);
                     }
+                }
+
+                try
+                {
+                    logger.LogInformation("Delete Old msgs chatid = {0}", chat.Id);
+
+                    foreach (var msgId in GetMsgIdForDelete(sendedPictInfo))
+                    {
+                        if (chat.IsDeletePrevMessage)
+                            await bot.DeleteMessage(chat.Id, msgId);
+                        sendedPictInfo.Remove(sendedPictInfo.Find(x => x.MsgId == msgId));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error 2 SendPicture to {0}", chat.Id);
                 }
             }
 

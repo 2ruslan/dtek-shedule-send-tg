@@ -5,7 +5,12 @@ namespace Common
     public static class TextHelper
     {
         public static string GetFomatedFirstLine(string patern, DateOnly dt)
-            => string.Format(patern.Replace("{d}", "{0}"), dt.ToString("dd.MM.yyyy"));
+            => string.Format(patern
+                                .Replace("{d}",  "{0}")
+                                .Replace("{dd}", "{1}")
+                            , dt.ToString("dd.MM.yyyy")
+                            , dt == DateOnly.FromDateTime(DateTime.Now) ? "сьогодні" : "завтра"
+                );
         
         public static string GetFomatedLine(string patern, string leadingSymbol, int s, int f)
         {
