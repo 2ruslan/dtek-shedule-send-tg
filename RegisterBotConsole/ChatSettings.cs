@@ -87,5 +87,11 @@ namespace RegisterBotConsole
             get { return chat.PowerOffLeadingSymbol; }
             set { chat.PowerOffLeadingSymbol = value; }
         }
+
+        public string Key
+        {
+            get { return chat.SvitlobotKey; }
+            set { chat.SvitlobotKey = value; }
+        }
     }
 }

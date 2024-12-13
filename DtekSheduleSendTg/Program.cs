@@ -52,7 +52,7 @@ namespace DtekSheduleSendTg
             var chatInfoRepository = new ChatInfoRepositoryApp(region);
             var textInfoRepository = new TextInfoRepository(region);
             var workInfoRepository = new WorkInfoRepository(region);
-
+            var scheduleWeekRepository = new ScheduleWeekRepository(region);
 
             var siteSource = new SiteSource(logger, site, region);
 
@@ -60,7 +60,7 @@ namespace DtekSheduleSendTg
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger);
 
-            var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository, workInfoRepository);
+            var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository, workInfoRepository, scheduleWeekRepository);
 
             await sender.CheckAndSend();
 

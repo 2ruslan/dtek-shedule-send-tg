@@ -1,6 +1,7 @@
 ﻿using Common;
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.Shedule;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -34,42 +35,47 @@ namespace DtekSheduleSendTg.DTEK
             var sheduleString = currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
 
             var sb = new StringBuilder();
-            
-            try
+            if (group > 0)
             {
-                var h = 0;
-                bool isOpenD = false;
-                var startPeriod = 0;
-
-                foreach (var s in sheduleString)
+                try
                 {
-                    if (s == '0' && !isOpenD)
+                    var h = 0;
+                    bool isOpenD = false;
+                    var startPeriod = 0;
+
+                    foreach (var s in sheduleString)
                     {
-                        startPeriod = h;
-                        isOpenD = true;
+                        if (s == '0' && !isOpenD)
+                        {
+                            startPeriod = h;
+                            isOpenD = true;
+                        }
+
+                        if (s == '1' && isOpenD)
+                        {
+                            sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, h));
+                            isOpenD = false;
+                        }
+
+                        h++;
                     }
 
-                    if (s == '1' && isOpenD)
-                    {
-                        sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, h));
-                        isOpenD = false;
-                    }
+                    if (isOpenD)
+                        sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, 24));
 
-                    h++;
+                    if (sb.Length == 0)
+                        sb.Append("<b>    - не планується</b>");
                 }
-
-                if (isOpenD)
-                    sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, 24));
-
-                if (sb.Length == 0)
-                    sb.Append("<b>    - не планується</b>");
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "GetSheduleDescription");
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "GetSheduleDescription");
+                }
             }
 
-            sb.Insert(0, $"{firsttLine}\r\n");
+            if (sb.Length > 0)
+                sb.Insert(0, "\r\n");
+
+            sb.Insert(0,firsttLine);
 
             return sb.ToString();
         }
@@ -127,4 +133,5 @@ namespace DtekSheduleSendTg.DTEK
             return (int)average;
         }
     }
+
 }

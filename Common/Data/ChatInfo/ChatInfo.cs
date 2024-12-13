@@ -15,5 +15,7 @@
 
         public string PowerOffLinePattern { get; set; }
         public string PowerOffLeadingSymbol { get; set; }
+
+        public string SvitlobotKey { get; set; }
     }
 }

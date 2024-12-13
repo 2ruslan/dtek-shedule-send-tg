@@ -188,6 +188,8 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
         if (paresrResult.HasPowerOffLinePattern)
             chatSettings.PowerOffLinePattern = paresrResult.PowerOffLinePattern;
 
+        if (paresrResult.HasKey)
+            chatSettings.Key = paresrResult.Key;
 
         if (chatSettings.Group == 0)
             sb.Append("Схоже невірно вказаний другий параметр, перевірте літеру що вказує на регіон.");

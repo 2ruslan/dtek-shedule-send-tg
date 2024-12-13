@@ -1,8 +1,8 @@
 ﻿using Common;
 using Common.Abstraction;
 using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Data.PIctureFileInfo;
 using DtekSheduleSendTg.Data.WotkInfo;
-using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
 
 namespace DtekSheduleSendTg
@@ -13,7 +13,9 @@ namespace DtekSheduleSendTg
         ITelegramBot bot, 
         IDtekShedule dtekShedule, 
         IChatInfoRepository chatInfoRepository,
-        IWorkInfoRepository workInfoRepository
+        IWorkInfoRepository workInfoRepository,
+        IScheduleWeekRepository scheduleWeekRepository
+
        )
     {
         public async Task CheckAndSend()
@@ -28,7 +30,22 @@ namespace DtekSheduleSendTg
             foreach(var file in siteInfo.PIctureFiles)
                 if (!string.IsNullOrEmpty(file.FileName))
                     await SendPicture(file);
-            
+
+            var svitlobotSender = new SvitlobotSender(logger,
+                                                        chatInfoRepository,
+                                                        scheduleWeekRepository, 
+                                                        siteInfo.PIctureFiles,
+                                                        dtekShedule);
+            try
+            {
+                svitlobotSender.Prepare();
+                await svitlobotSender.Send();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Try Send2Svitlobot to");
+            }
+
             logger.LogInformation("End CheckAndSend");
         }
 

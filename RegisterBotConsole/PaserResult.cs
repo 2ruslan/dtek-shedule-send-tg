@@ -22,6 +22,7 @@
 
         public bool? IsSendWhenChanged { get; set; }
 
+        
         public bool IsGetInfo { get; set; }
 
         public bool HasCaption { get; set; }
@@ -32,5 +33,8 @@
 
         public bool HasPowerOffLeadingSymbol { get; set; }
         public string PowerOffLeadingSymbol { get; set; }
+
+        public bool HasKey { get; set; }
+        public string Key { get; set; }
     }
 }

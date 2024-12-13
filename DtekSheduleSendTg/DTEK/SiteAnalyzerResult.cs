@@ -1,4 +1,5 @@
 ﻿using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Data.PIctureFileInfo;
 
 namespace DtekSheduleSendTg.DTEK
 {

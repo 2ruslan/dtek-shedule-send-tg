@@ -1,4 +1,4 @@
-﻿namespace DtekSheduleSendTg.DTEK
+﻿namespace DtekSheduleSendTg.Data.PIctureFileInfo
 {
     public record PIctureFileInfo
     {

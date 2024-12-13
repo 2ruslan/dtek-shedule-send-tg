@@ -1,5 +1,6 @@
 ﻿using Common;
 using DtekSheduleSendTg.Abstraction;
+using DtekSheduleSendTg.Data.PIctureFileInfo;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
@@ -28,6 +29,13 @@ namespace DtekSheduleSendTg.DTEK
             {
                 var fileName = siteSource.StorePicFromUrl(pictureUrl.Url);
                 pictureUrl.FileName = fileName;
+
+                var infoFile = $"{fileName}.info";
+                var inf = PIctureFileInfoRepository.GetPIctureFileInfo(infoFile);
+                if (inf != null)
+                    pictureUrl.OnDate = inf.OnDate;
+                else
+                    PIctureFileInfoRepository.StorePIctureFileInfo(infoFile, pictureUrl);
             }
 
             result.PIctureFiles = pictureUrls;

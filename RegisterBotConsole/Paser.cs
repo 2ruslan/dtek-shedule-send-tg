@@ -53,7 +53,7 @@
             {
                 result.IsGetInfo = true;
             }
-            else if (part3 == "fl" || part3 == "pt" || part3 == "ls")
+            else if (part3 == "fl" || part3 == "pt" || part3 == "ls" || part3 == "key")
             {
                 var str = parts[3].Replace("_", " ");
 
@@ -72,10 +72,15 @@
                     result.HasPowerOffLeadingSymbol = true;
                     result.PowerOffLeadingSymbol = str == "del" ? string.Empty : str;
                 }
-         
+                else if (part3 == "key")
+                {
+                    result.HasKey = true;
+                    result.Key = str == "del" ? string.Empty : str;
+                }
+
                 return result;
             }
-            else if (!int.TryParse(parts[2].Trim(), out group) || group < 1 || group > 6)
+            else if (!int.TryParse(parts[2].Trim(), out group) || ((group < 1 || group > 6) && (group != -1)))
                 return GetError(result, "Третій параметр повинен бути номером групи відключення (1-6) або додаткова команда");
             else
                 result.Group = group;
