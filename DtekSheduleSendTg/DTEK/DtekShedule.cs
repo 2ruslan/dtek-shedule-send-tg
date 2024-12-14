@@ -11,8 +11,8 @@ namespace DtekSheduleSendTg.DTEK
 {
     public class DtekShedule(ILogger logger) : IDtekShedule
     {
-        public string GetSchedule(long group)
-            => currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString;
+        public string GetSchedule(string group)
+            => currentShedule.FirstOrDefault(x => x.GroupNum == group)?.SheduleString;
         
         private  IList<SheduleData> currentShedule = new List<SheduleData>();
 
@@ -30,12 +30,12 @@ namespace DtekSheduleSendTg.DTEK
             return true;
         }
 
-        public string GetFullPictureDescription(long group, string firsttLine, string linePatern, string leadingSymbol)
+        public string GetFullPictureDescription(string group, string firsttLine, string linePatern, string leadingSymbol)
         {
-            var sheduleString = currentShedule.FirstOrDefault(x => x.Group == group)?.SheduleString ?? string.Empty;
+            var sheduleString = currentShedule.FirstOrDefault(x => x.GroupNum == group)?.SheduleString ?? string.Empty;
 
             var sb = new StringBuilder();
-            if (group > 0)
+            if (!string.Equals(GroupHelper.AllGroups, group))
             {
                 try
                 {
@@ -105,7 +105,10 @@ namespace DtekSheduleSendTg.DTEK
                         sb.Append(average > 240 ? "1" : "0");
                     }
                     Console.WriteLine("--");
-                    result.Add(new SheduleData() { Group = group++, SheduleString = sb.ToString() });
+                    result.Add(new SheduleData() { 
+                                        GroupNum = GroupHelper.DtekPositions[group++], 
+                                        SheduleString = sb.ToString() 
+                            });
                 }
             }
             catch (Exception ex)

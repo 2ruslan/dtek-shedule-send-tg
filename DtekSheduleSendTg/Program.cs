@@ -1,7 +1,4 @@
-﻿using Common;
-using DtekSheduleSendTg.Abstraction;
-using DtekSheduleSendTg.Data.ChatInfo;
-using DtekSheduleSendTg.Data.Shedule;
+﻿using DtekSheduleSendTg.Data.ChatInfo;
 using DtekSheduleSendTg.Data.TextInfo;
 using DtekSheduleSendTg.Data.WotkInfo;
 using DtekSheduleSendTg.DTEK;
@@ -45,6 +42,8 @@ namespace DtekSheduleSendTg
             // global config value
             var botToken = ConfigurationManager.AppSettings["BotToken"];
 
+            var statisticsChanel = long.Parse(ConfigurationManager.AppSettings["StatisticsGroup"]);
+
             // region config value
             var site = GetRegionConfigValue("Site", region);
             var shedilePicRegex = GetRegionConfigValue("SchedulePicRegex", region); 
@@ -60,9 +59,21 @@ namespace DtekSheduleSendTg
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger);
 
-            var sender = new Sender(logger, siteAnalyzer, bot, dtekShedule, chatInfoRepository, workInfoRepository, scheduleWeekRepository);
+            var monitoring = new Monitoring2Txt($"  --=  {region}  =--  ");
+
+            var sender = new Sender(logger, 
+                                    siteAnalyzer, 
+                                    bot, 
+                                    dtekShedule, 
+                                    chatInfoRepository, 
+                                    workInfoRepository, 
+                                    scheduleWeekRepository,
+                                    monitoring
+                                    );
 
             await sender.CheckAndSend();
+
+            await bot.SendText(statisticsChanel, monitoring.GetInfo());
 
             logger.LogInformation("  ");
         }

@@ -1,4 +1,5 @@
-﻿using Common.Abstraction;
+﻿using Common;
+using Common.Abstraction;
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.PIctureFileInfo;
 using DtekSheduleSendTg.Data.Shedule;
@@ -12,7 +13,7 @@ namespace DtekSheduleSendTg
                                 , IScheduleWeekRepository scheduleWeekRepository
                                 , IEnumerable<PIctureFileInfo> pIctureFiles
                                 , IDtekShedule dtekShedule
-        
+                                , IMonitoring monitoring
         )
     {
         private const string emptyDaySchedule = "000000000000000000000000";
@@ -40,8 +41,8 @@ namespace DtekSheduleSendTg
             foreach (var fi in pIctureFiles)
             {
                 dtekShedule.AnalyzeFile(fi.FileName);
-                for (int i = 1; i < 7; i++)
-                    SetShedule(i, fi.OnDate, dtekShedule.GetSchedule(i));
+                foreach(var g in GroupHelper.Groups)
+                    SetShedule(g, fi.OnDate, dtekShedule.GetSchedule(g));
             }
 
             scheduleWeekRepository.StoreSchedules(scheduleWeek);
@@ -51,6 +52,9 @@ namespace DtekSheduleSendTg
 
         public async Task Send()
         {
+            const string MonitoringName = "Send2svitlobot";
+            monitoring.CounterRgister(MonitoringName);
+
             loger.LogInformation("SendToSvitlobot Send start");
 
             if (IsMondayNoUpdateTime)
@@ -60,7 +64,9 @@ namespace DtekSheduleSendTg
             {
                 if (!string.IsNullOrEmpty(ci.SvitlobotKey))
                 {
-                    var grpSchedules = scheduleWeek.Schedules.Where(x => x.Group == ci.Group).OrderBy(x => x.DayOfWeek);
+                    var grpSchedules = scheduleWeek.Schedules
+                                                    .Where(x => x.GroupNum == ci.GroupNum)
+                                                    .OrderBy(x => x.DayOfWeek);
 
                     if (grpSchedules.Count() == 0 || grpSchedules.Any(x => x.IsChaged))
                     {
@@ -71,9 +77,12 @@ namespace DtekSheduleSendTg
                             sb.AppendFormat("{0}%3B", grpSchedules.FirstOrDefault(x => x.DayOfWeek == i)?.SheduleString ?? emptyDaySchedule);
 
                         await SendToSvitlobot(ci.SvitlobotKey, sb.ToString());
+
+                        monitoring.Counter(MonitoringName);
                     }
                 }
             }
+
             loger.LogInformation("SendToSvitlobot Send end");
         }
 
@@ -95,13 +104,16 @@ namespace DtekSheduleSendTg
             }
         }
 
-        private void SetShedule(int group, DateOnly date, string schedule)
+        private void SetShedule(string group, DateOnly date, string schedule)
         {
             var normalDayOfWeek = date.DayOfWeek == DayOfWeek.Sunday ? 7 : ((int)date.DayOfWeek);
 
-            var daySchedule = scheduleWeek.Schedules.FirstOrDefault(x => x.Group == group && x.DayOfWeek == normalDayOfWeek);
+            var daySchedule = scheduleWeek.Schedules
+                                .FirstOrDefault(x => x.GroupNum == group && x.DayOfWeek == normalDayOfWeek);
+
+
             if (daySchedule is null)
-                scheduleWeek.Schedules.Add(daySchedule = new ScheduleWeekDay() { Group = group, DayOfWeek = normalDayOfWeek });
+                scheduleWeek.Schedules.Add(daySchedule = new ScheduleWeekDay() { GroupNum = group, DayOfWeek = normalDayOfWeek });
 
             var newSchedule = schedule
                                   .Replace('0', 'x')

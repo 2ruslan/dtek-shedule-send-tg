@@ -17,6 +17,8 @@ namespace DtekSheduleSendTg
 
         public async Task<int> SendText(long chatId, string message)
         {
+           // await TelegramHelper.CheckRights(bot, chatId, 1);
+
             logger.LogInformation("TelegramBot start SendText");
             
             Message result = null;
@@ -112,7 +114,6 @@ namespace DtekSheduleSendTg
 
                 logger.LogInformation("Sended to {0} {1}", chatId, result.Date);
 
-                Thread.Sleep(3 * 1000);
             }
             catch (Exception ex)
             {

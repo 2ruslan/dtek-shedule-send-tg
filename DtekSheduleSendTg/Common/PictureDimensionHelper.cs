@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Common;
+using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Text;
@@ -30,7 +31,7 @@ namespace DtekSheduleSendTg.DTEK
             var yStep = nextB.y - prevB.y;
             var yStart = prevB.y - (yStep * 2) + (yStep / 2);
 
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < GroupHelper.Groups.Length; i++)
                 GroupCoord.Add(yStart + (i * yStep));
 
             // ----------------------------- x (group)
@@ -67,7 +68,7 @@ namespace DtekSheduleSendTg.DTEK
                 sb.Append($"{t}, ");
             loger.LogInformation("TimeCoord = {0}", sb);
 
-            if (GroupCoord.Count != 6 || TimeCoord.Count != 24)
+            if (GroupCoord.Count != GroupHelper.Groups.Length || TimeCoord.Count != 24)
             {
                 GroupCoord.Clear();
                 TimeCoord.Clear();

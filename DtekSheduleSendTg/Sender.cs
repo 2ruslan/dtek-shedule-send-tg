@@ -1,9 +1,11 @@
 ﻿using Common;
 using Common.Abstraction;
+using Common.Data.ChatInfo;
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.PIctureFileInfo;
 using DtekSheduleSendTg.Data.WotkInfo;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace DtekSheduleSendTg
 {
@@ -14,28 +16,54 @@ namespace DtekSheduleSendTg
         IDtekShedule dtekShedule, 
         IChatInfoRepository chatInfoRepository,
         IWorkInfoRepository workInfoRepository,
-        IScheduleWeekRepository scheduleWeekRepository
-
+        IScheduleWeekRepository scheduleWeekRepository,
+        IMonitoring monitoring
        )
     {
         public async Task CheckAndSend()
         {
             logger.LogInformation("Start CheckAndSend");
 
-            var siteInfo = siteAnalyzer.Analyze();
-            
-            if (!string.IsNullOrEmpty(siteInfo.Text))
-                await SendText(siteInfo.Text);
-            
-            foreach(var file in siteInfo.PIctureFiles)
-                if (!string.IsNullOrEmpty(file.FileName))
-                    await SendPicture(file);
+            monitoring.Start();
 
+            var siteInfo = siteAnalyzer.Analyze();
+
+            monitoring.AddCheckpoint("site src & analyze");
+
+            var chats = chatInfoRepository.GetChatInfo();
+            logger.LogInformation("Chat Info count = {0}", chats.Count());
+            monitoring.Append("Chats count", chats.Count);
+
+
+            if (!string.IsNullOrEmpty(siteInfo.Text))
+                await SendText(chats, siteInfo.Text);
+
+            monitoring.AddCheckpoint("txt sent");
+
+            foreach (var file in siteInfo.PIctureFiles)
+                if (!string.IsNullOrEmpty(file.FileName))
+                    await SendPicture(chats, file);
+
+            monitoring.AddCheckpoint("pic sent");
+
+            await Send2Svitlobot(siteInfo.PIctureFiles);
+
+            monitoring.AddCheckpoint("sbot sent");
+
+            monitoring.Finish();
+
+            logger.LogInformation("End CheckAndSend");
+        }
+
+        private async Task Send2Svitlobot(IEnumerable<PIctureFileInfo> pIctureFileInfos)
+        {
             var svitlobotSender = new SvitlobotSender(logger,
-                                                        chatInfoRepository,
-                                                        scheduleWeekRepository, 
-                                                        siteInfo.PIctureFiles,
-                                                        dtekShedule);
+                                                            chatInfoRepository,
+                                                            scheduleWeekRepository,
+                                                            pIctureFileInfos,
+                                                            dtekShedule,
+                                                            monitoring
+                                                            );
             try
             {
                 svitlobotSender.Prepare();
@@ -43,42 +71,41 @@ namespace DtekSheduleSendTg
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Try Send2Svitlobot to");
+                logger.LogError(ex, "Error Send2Svitlobot to");
             }
-
-            logger.LogInformation("End CheckAndSend");
         }
 
-        private async Task SendText(string message)
+        private async Task SendText(IList<ChatInfo> chats, string message)
         {
+            const string MonitoringName = "Send txt";
+            monitoring.CounterRgister(MonitoringName);
+
             logger.LogInformation("Start SendText");
-            
-            var chats = chatInfoRepository.GetChatInfo();
-            logger.LogInformation("Chat Info count = {0}", chats.Count());
 
             foreach (var chat in chats)
                 if (chat.IsSendTextMessage)
+                {
                     await bot.SendText(chat.Id, message);
-            
+                    monitoring.Counter(MonitoringName);
+                }
+
             logger.LogInformation("End SendText");
         }
 
-        private async Task SendPicture(PIctureFileInfo fileInfo)
+        private async Task SendPicture(IList<ChatInfo> chats, PIctureFileInfo fileInfo)
         {
+            const string MonitoringName = "Send pic";
+            monitoring.CounterRgister(MonitoringName);
+
             logger.LogInformation("Start SendPicture");
 
-
             dtekShedule.AnalyzeFile(fileInfo.FileName);
-            
-
-            var chats = chatInfoRepository.GetChatInfo();
-            logger.LogInformation("Chat Info count = {0}", chats.Count());
-
+          
             var workInfo = workInfoRepository.GetWorkInfo();
 
             foreach (var chat in chats)
             {
-                var currentSh = dtekShedule.GetSchedule(chat.Group);
+                var currentSh = dtekShedule.GetSchedule(chat.GroupNum);
 
                 var sendedPictInfo = workInfo.SendedPictInfo.ContainsKey(chat.Id)
                             ? workInfo.SendedPictInfo[chat.Id]
@@ -98,7 +125,7 @@ namespace DtekSheduleSendTg
                     {
                         var description = chat.IsNoSendPictureDescription
                             ? string.Empty
-                            : dtekShedule.GetFullPictureDescription(chat.Group,
+                            : dtekShedule.GetFullPictureDescription(chat.GroupNum,
                                                                     TextHelper.GetFomatedFirstLine(chat.Caption, fileInfo.OnDate), 
                                                                     chat.PowerOffLinePattern, 
                                                                     chat.PowerOffLeadingSymbol);
@@ -115,6 +142,8 @@ namespace DtekSheduleSendTg
                                     OnDate = fileInfo.OnDate,
                                     ScheduleString = currentSh
                                 });
+
+                        monitoring.Counter(MonitoringName);
                     }
                     catch (Exception ex)
                     {

@@ -130,7 +130,7 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
     var userid = msg.From.Id;
 
     var paser = new Paser();
-    var paresrResult = await paser.Parse(message);
+    var paresrResult = paser.Parse(message);
 
     if (paresrResult.HasError)
         return paresrResult.Error;
@@ -142,7 +142,7 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
     {
         GroupId = paresrResult.Id.Value;
 
-        var rightsError = await CheckRights(GroupId, userid);
+        var rightsError = await TelegramHelper.CheckRights(bot, GroupId, userid);
         if (!string.IsNullOrEmpty(rightsError))
             return rightsError;
     }
@@ -164,8 +164,8 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
     }
     else
     {
-        if (paresrResult.Group.HasValue)
-            chatSettings.Group = paresrResult.Group.Value;
+        if (paresrResult.HasGroupNum)
+            chatSettings.GroupNum = paresrResult.GroupNum;
 
         if (paresrResult.IsDeletePrevMessage.HasValue)
             chatSettings.IsDeletePrevMessage = paresrResult.IsDeletePrevMessage.Value;
@@ -191,7 +191,7 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
         if (paresrResult.HasKey)
             chatSettings.Key = paresrResult.Key;
 
-        if (chatSettings.Group == 0)
+        if (string.IsNullOrEmpty(chatSettings.GroupNum))
             sb.Append("Схоже невірно вказаний другий параметр, перевірте літеру що вказує на регіон.");
         else
         {
@@ -212,19 +212,4 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
     return sb.ToString();
 }
 
-async Task<string> CheckRights(long chatId, long userid)
-{
-    var chkChat = await bot.GetChat(chatId);
-
-    var admins = await bot.GetChatAdministrators(chkChat.Id);
-
-    if (Array.Find(admins, x => x.User.Id == userid) == null)
-        return "У Вас відсутні права адміністратора на вказаний чат/групу.";
-
-    var botAdmin = Array.Find(admins, x => x.User.Id == me.Id);
-    if (botAdmin == null)
-        return "У бота відсутні права адміністратора на вказаний чат/групу.";
-
-    return string.Empty;
-}
 

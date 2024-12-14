@@ -2,7 +2,8 @@
 {
     public record SheduleData
     {
-        public int Group { get; set; }
+        public string GroupNum { get; set; }
+      
         public string SheduleString { get; set; }
     }
 }

@@ -7,8 +7,8 @@ namespace DtekSheduleSendTg.Abstraction
     {
         public bool AnalyzeFile(string file);
         
-        public string GetFullPictureDescription(long group, string firsttLine, string linePatern, string leadingSymbol);
+        public string GetFullPictureDescription(string group, string firsttLine, string linePatern, string leadingSymbol);
         
-        public string GetSchedule(long group);
+        public string GetSchedule(string group);
     }
 }

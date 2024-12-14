@@ -1,4 +1,6 @@
-﻿namespace RegisterBotConsole
+﻿using Common;
+
+namespace RegisterBotConsole
 {
     internal class Paser
     {
@@ -11,7 +13,7 @@
         const string PictureOnlyCommand = "+piconly";
         const string SendWhenScheduleChandedComand = "+nshonly";
 
-        public async Task<PaserResult> Parse(string message) 
+        public PaserResult Parse(string message) 
         {
             var result = new PaserResult();
 
@@ -80,10 +82,13 @@
 
                 return result;
             }
-            else if (!int.TryParse(parts[2].Trim(), out group) || ((group < 1 || group > 6) && (group != -1)))
-                return GetError(result, "Третій параметр повинен бути номером групи відключення (1-6) або додаткова команда");
+            else if (GroupHelper.Groups.Any(x => string.Equals(x, part3)) || string.Equals(part3, GroupHelper.AllGroups))
+            {
+                result.HasGroupNum = true;
+                result.GroupNum = part3;
+            }
             else
-                result.Group = group;
+                return GetError(result, "Третій параметр повинен бути номером групи відключення або додаткова команда для налаштування");
             #endregion group or delete command
 
             #region  addCommands

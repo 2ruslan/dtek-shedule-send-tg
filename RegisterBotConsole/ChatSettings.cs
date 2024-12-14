@@ -33,14 +33,14 @@ namespace RegisterBotConsole
             ApllyChanges();
         }
 
-        public int Group
+        public string GroupNum
         {
-            get => chat.Group;
+            get => chat.GroupNum;
             set
             {
-                if (chat.Group != value)
+                if (chat.GroupNum != value)
                 {
-                    chat.Group = value;
+                    chat.GroupNum = value;
                     chat.Caption = $"🗓️Графік відключень, {value} група";
                 }
             }

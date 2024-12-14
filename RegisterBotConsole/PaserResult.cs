@@ -13,7 +13,11 @@
         public long? Id { get; set; }
         public bool IsThisChatBotId { get; set; }
 
+
         public int? Group { get; set; }
+
+        public bool HasGroupNum { get; set; }
+        public string GroupNum { get; set; }
 
         public bool? IsDeletePrevMessage { get; set; }
         public bool? IsSendTextMessage { get; set; }
