@@ -12,9 +12,9 @@ namespace Common
                             , dt == DateOnly.FromDateTime(DateTime.Now) ? "сьогодні" : "завтра"
                 );
         
-        public static string GetFomatedLine(string patern, string leadingSymbol, int s, int f)
+        public static string GetFomatedLine(string patern, string leadingSymbol, int sh, int sm, int fh, int fm)
         {
-            var h = f - s;
+            var h = fh - sh;
 
             if (string.IsNullOrEmpty(patern))
                 patern = "<b>    {s} - {f}</b>";
@@ -27,11 +27,14 @@ namespace Common
             if (string.IsNullOrEmpty(leadingSymbol))
                 leadingSymbol = "  ";
 
-            return string.Format(realPatern, GetFormatedH(s, leadingSymbol), GetFormatedH(f, leadingSymbol), h);
+            return string.Format(realPatern, 
+                    GetFormatedH(sh, sm, leadingSymbol), 
+                    GetFormatedH(fh, fm, leadingSymbol), 
+                    h);
         }
 
-        private static string GetFormatedH(int h, string leadingSymbol)
-            => h < 10 ? $"{leadingSymbol}{h}:00" : $"{h}:00";
+        private static string GetFormatedH(int h, int m, string leadingSymbol)
+            => (h < 10 ? leadingSymbol : string.Empty) + string.Format("{0}:{1:00}",h, m);
 
 
         public static string FixHtml2Telegram(this string str)

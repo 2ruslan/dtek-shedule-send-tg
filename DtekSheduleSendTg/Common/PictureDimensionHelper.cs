@@ -29,7 +29,7 @@ namespace DtekSheduleSendTg.DTEK
             var prevB = GetNext(img, leftBorder.x + 10, leftBorder.y, Direction.top);
 
             var yStep = nextB.y - prevB.y;
-            var yStart = prevB.y - (yStep * 2) + (yStep / 2);
+            var yStart = prevB.y - (yStep * 5) + (yStep / 2);
 
             for (int i = 0; i < GroupHelper.Groups.Length; i++)
                 GroupCoord.Add(yStart + (i * yStep));

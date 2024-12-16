@@ -28,7 +28,7 @@ namespace DtekSheduleSendTg
 
             var siteInfo = siteAnalyzer.Analyze();
 
-            monitoring.AddCheckpoint("site src & analyze");
+            monitoring.AddCheckpoint("src&analyze");
 
             var chats = chatInfoRepository.GetChatInfo();
             logger.LogInformation("Chat Info count = {0}", chats.Count());
@@ -45,11 +45,11 @@ namespace DtekSheduleSendTg
                     await SendPicture(chats, file);
 
             monitoring.AddCheckpoint("pic sent");
+            
+            //await Send2Svitlobot(siteInfo.PIctureFiles);
 
-            await Send2Svitlobot(siteInfo.PIctureFiles);
-
-            monitoring.AddCheckpoint("sbot sent");
-
+            //monitoring.AddCheckpoint("sbt sent");
+            
             monitoring.Finish();
 
             logger.LogInformation("End CheckAndSend");

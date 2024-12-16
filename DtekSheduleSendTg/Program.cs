@@ -56,9 +56,29 @@ namespace DtekSheduleSendTg
             var siteSource = new SiteSource(logger, site, region);
 
             var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource, shedilePicRegex);
+            
+
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger);
 
+            /*
+            dtekShedule.AnalyzeFile(@"c:\temp\page-chart-9107-1050.png");
+            Console.WriteLine(dtekShedule.GetSchedule("1.1"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("1.1", "uhf {d}", string.Empty, " "));
+            Console.WriteLine(dtekShedule.GetSchedule("1.2"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("1.2", "uhf {d}", string.Empty, " "));
+            Console.WriteLine(dtekShedule.GetSchedule("2.1"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("2.1", "uhf {d}", string.Empty, " "));
+            Console.WriteLine(dtekShedule.GetSchedule("2.2"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("2.2", "uhf {d}", string.Empty, " "));
+            Console.WriteLine(dtekShedule.GetSchedule("3.1"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("3.1", "uhf {d}", string.Empty, " "));
+            Console.WriteLine(dtekShedule.GetSchedule("3.2"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("3.2", "uhf {d}", string.Empty, " "));
+            Console.WriteLine(dtekShedule.GetSchedule("5.1"));
+            Console.WriteLine(dtekShedule.GetFullPictureDescription("5.1", "uhf {d}", string.Empty, " "));
+            return;
+            */
             var monitoring = new Monitoring2Txt($"  --=  {region}  =--  ");
 
             var sender = new Sender(logger, 

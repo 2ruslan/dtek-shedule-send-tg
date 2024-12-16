@@ -40,7 +40,7 @@ namespace DtekSheduleSendTg
             var currentDt = DateTime.Now;
             sb.AppendFormat("\r\n{0}: {1} {2:0.00}s.",
                                 name,
-                                currentDt.ToString("yyyy.MM.dd HH:mm:ss"),
+                                currentDt.ToString("HH:mm:ss"),
                                 (currentDt - checkpoint).TotalSeconds
                             );
             checkpoint = currentDt;
@@ -52,7 +52,7 @@ namespace DtekSheduleSendTg
                 Append(item.Key, item.Value);
 
             var finishDt = DateTime.Now;
-            sb.AppendFormat("\r\nFinish: {0}", finishDt.ToString("yyyy.MM.dd HH:mm:ss"));
+            sb.AppendFormat("\r\nFinish: {0}", finishDt.ToString("HH:mm:ss"));
             sb.AppendFormat("\r\nTotal: {0:0.00}s.", (finishDt - startDt).TotalSeconds );
             sb.Append("</code>");
         }

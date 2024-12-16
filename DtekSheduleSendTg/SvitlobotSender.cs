@@ -20,7 +20,8 @@ namespace DtekSheduleSendTg
         private ScheduleWeek scheduleWeek;
 
         private static bool IsMondayNoUpdateTime
-                        => (DateTime.Now.DayOfWeek == DayOfWeek.Monday && DateTime.Now.Hour < 12);
+                        => (DateTime.Now.DayOfWeek == DayOfWeek.Monday && DateTime.Now.Hour < 12)
+            ;
                 
 
         public void Prepare()

@@ -1,7 +1,6 @@
 ﻿using Common;
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.Shedule;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,6 +10,7 @@ namespace DtekSheduleSendTg.DTEK
 {
     public class DtekShedule(ILogger logger) : IDtekShedule
     {
+        private const int _COLOR_05 = -1;
         public string GetSchedule(string group)
             => currentShedule.FirstOrDefault(x => x.GroupNum == group)?.SheduleString;
         
@@ -41,19 +41,35 @@ namespace DtekSheduleSendTg.DTEK
                 {
                     var h = 0;
                     bool isOpenD = false;
-                    var startPeriod = 0;
+                    var startPeriodH = 0;
+                    var startPeriodM = 0;
 
                     foreach (var s in sheduleString)
                     {
-                        if (s == '0' && !isOpenD)
+                        if (s == SheduleData._OFF && !isOpenD)
                         {
-                            startPeriod = h;
+                            startPeriodH = h;
+                            startPeriodM = 0;
                             isOpenD = true;
                         }
-
-                        if (s == '1' && isOpenD)
+                        else if (s == SheduleData._ON_05_START && !isOpenD)
                         {
-                            sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, h));
+                            startPeriodH = h;
+                            startPeriodM = 30;
+                            isOpenD = true;
+                        }
+                        else if (s == SheduleData._ON && isOpenD)
+                        {
+                            sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol,
+                                                                    startPeriodH, startPeriodM,
+                                                                    h, 0));
+                            isOpenD = false;
+                        }
+                        else if (s == SheduleData._ON_05_END && isOpenD)
+                        {
+                            sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol,
+                                                                    startPeriodH, startPeriodM,
+                                                                    h, 30));
                             isOpenD = false;
                         }
 
@@ -61,7 +77,9 @@ namespace DtekSheduleSendTg.DTEK
                     }
 
                     if (isOpenD)
-                        sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol, startPeriod, 24));
+                        sb.AppendLine(TextHelper.GetFomatedLine(linePatern, leadingSymbol,
+                                                                startPeriodH, startPeriodM,
+                                                                24, 0));
 
                     if (sb.Length == 0)
                         sb.Append("<b>    - не планується</b>");
@@ -92,19 +110,37 @@ namespace DtekSheduleSendTg.DTEK
                 var dim = PictureDimensionHelper.GetParamsFormImage(logger, img);
                 
                 int group = 1;
+                char prevSSymbol = '_';
 
                 foreach (var g in dim.GroupCoord)
                 {
                     var sb = new StringBuilder();
-
+                    Console.WriteLine(GroupHelper.DtekPositions[group]);
                     foreach(var t in dim.TimeCoord)
                     {
-                        
                         int average = GetAverage(img, t, g);
+                        
+                        char sSymbol;
+                        Console.WriteLine(average);
+                        
+                        if (average == _COLOR_05) 
+                            sSymbol = string.Equals(prevSSymbol, SheduleData._OFF) 
+                                            ? SheduleData._ON_05_END
+                                            : SheduleData._ON_05_START;
+                        else if (average > 200) 
+                            sSymbol = SheduleData._ON;
+                        else 
+                            sSymbol = SheduleData._OFF;
 
-                        sb.Append(average > 240 ? "1" : "0");
+                        prevSSymbol = sSymbol;
+
+                        sb.Append(sSymbol);
                     }
-                    Console.WriteLine("--");
+                    
+                    // fix first sumbol
+                    if (sb[0] == SheduleData._ON_05_START && sb[1] == SheduleData._ON)
+                        sb[0] = SheduleData._ON_05_END;
+                    Console.WriteLine("------");
                     result.Add(new SheduleData() { 
                                         GroupNum = GroupHelper.DtekPositions[group++], 
                                         SheduleString = sb.ToString() 
@@ -122,15 +158,21 @@ namespace DtekSheduleSendTg.DTEK
         private static int GetAverage(Image<Rgba32> img, int t, int g)
         {
             double average = 0;
-
-            var tm = new int[] {t - 1, t, t + 1};
+            
+            var tm = new int[] { t - 3, t - 2, t - 1, t, t + 1, t + 2, t + 3 };
             var gm = new int[] {g - 1, g, g + 1 };
+            
+            var qnt = tm.Length * gm.Length;
 
             foreach (var tp in tm)
                 foreach (var gp in gm)
                 {
                     var colorPixel = img[tp, gp];
-                    average += (((colorPixel.R + colorPixel.B + colorPixel.G) / 3.0) / 9.0);
+                    
+                    if (colorPixel.R > 200 && colorPixel.G > 200 && colorPixel.B < 200)
+                        return _COLOR_05;
+
+                    average += (((colorPixel.R + colorPixel.B + colorPixel.G) / 3.0) / qnt);
                 }
 
             return (int)average;

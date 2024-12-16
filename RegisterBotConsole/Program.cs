@@ -203,8 +203,8 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
             {
                 sb.AppendLine("Приклад підпису:");
                 sb.AppendLine(TextHelper.GetFomatedFirstLine(chatSettings.Caption, DateOnly.FromDateTime(DateTime.Now)));
-                sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 9));
-                sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 15));
+                sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 3, 0, 9, 30));
+                sb.AppendLine(TextHelper.GetFomatedLine(chatSettings.PowerOffLinePattern, chatSettings.PowerOffLeadingSymbol, 11, 0, 15, 0));
             }
         }
     }
