@@ -3,6 +3,7 @@ using Common.Abstraction;
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.PIctureFileInfo;
 using DtekSheduleSendTg.Data.Shedule;
+using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
 using System.Text;
 
@@ -36,8 +37,8 @@ namespace DtekSheduleSendTg
             foreach(var itm in  scheduleWeek.Schedules)
                 itm.IsChaged = false;
 
-            if (DateTime.Now.DayOfWeek == DayOfWeek.Monday && scheduleWeek.Schedules.Count > 0)
-                scheduleWeek.Schedules.Clear();
+           // if (DateTime.Now.DayOfWeek == DayOfWeek.Monday && scheduleWeek.Schedules.Count > 0)
+           //     scheduleWeek.Schedules.Clear();
 
             foreach (var fi in pIctureFiles)
             {
@@ -63,7 +64,7 @@ namespace DtekSheduleSendTg
 
             foreach (var ci in chatInfoRepository.GetChatInfo())
             {
-                if (!string.IsNullOrEmpty(ci.SvitlobotKey))
+                if (!string.IsNullOrEmpty(ci.SvitlobotKey) && GroupHelper.Groups.Any( x => x == ci.GroupNum))
                 {
                     var grpSchedules = scheduleWeek.Schedules
                                                     .Where(x => x.GroupNum == ci.GroupNum)
@@ -97,7 +98,7 @@ namespace DtekSheduleSendTg
 
                 var client = new HttpClient();
                 await client.GetAsync(url);
-                Thread.Sleep(1000);
+                Thread.Sleep(300);
             }
             catch (Exception e)
             {
@@ -117,9 +118,12 @@ namespace DtekSheduleSendTg
                 scheduleWeek.Schedules.Add(daySchedule = new ScheduleWeekDay() { GroupNum = group, DayOfWeek = normalDayOfWeek });
 
             var newSchedule = schedule
-                                  .Replace('0', 'x')
-                                  .Replace('1', '0')
-                                  .Replace('x', '1');
+                                 // .Replace('0', 'x')
+                                 // .Replace('1', '0')
+                                 // .Replace('x', '1')
+                                  .Replace(SheduleData._ON_05_END, '1')
+                                  .Replace(SheduleData._ON_05_START, '1')
+                                  ;
 
             daySchedule.IsChaged = !string.Equals(daySchedule.SheduleString, newSchedule);
             daySchedule.SheduleString = newSchedule;

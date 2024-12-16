@@ -10,7 +10,8 @@ namespace DtekSheduleSendTg.DTEK
 {
     public class DtekShedule(ILogger logger) : IDtekShedule
     {
-        private const int _COLOR_05 = -1;
+        private const int _COLOR_ON05START = -1;
+        private const int _COLOR_ON05FINISH = -2;
         public string GetSchedule(string group)
             => currentShedule.FirstOrDefault(x => x.GroupNum == group)?.SheduleString;
         
@@ -110,8 +111,7 @@ namespace DtekSheduleSendTg.DTEK
                 var dim = PictureDimensionHelper.GetParamsFormImage(logger, img);
                 
                 int group = 1;
-                char prevSSymbol = '_';
-
+                
                 foreach (var g in dim.GroupCoord)
                 {
                     var sb = new StringBuilder();
@@ -123,24 +123,18 @@ namespace DtekSheduleSendTg.DTEK
                         char sSymbol;
                         Console.WriteLine(average);
                         
-                        if (average == _COLOR_05) 
-                            sSymbol = string.Equals(prevSSymbol, SheduleData._OFF) 
-                                            ? SheduleData._ON_05_END
-                                            : SheduleData._ON_05_START;
+                        if (average == _COLOR_ON05START) 
+                            sSymbol = SheduleData._ON_05_START;
+                        else if (average == _COLOR_ON05FINISH)
+                            sSymbol = SheduleData._ON_05_END;
                         else if (average > 200) 
                             sSymbol = SheduleData._ON;
                         else 
                             sSymbol = SheduleData._OFF;
 
-                        prevSSymbol = sSymbol;
-
                         sb.Append(sSymbol);
                     }
                     
-                    // fix first sumbol
-                    if (sb[0] == SheduleData._ON_05_START && sb[1] == SheduleData._ON)
-                        sb[0] = SheduleData._ON_05_END;
-                    Console.WriteLine("------");
                     result.Add(new SheduleData() { 
                                         GroupNum = GroupHelper.DtekPositions[group++], 
                                         SheduleString = sb.ToString() 
@@ -170,7 +164,7 @@ namespace DtekSheduleSendTg.DTEK
                     var colorPixel = img[tp, gp];
                     
                     if (colorPixel.R > 200 && colorPixel.G > 200 && colorPixel.B < 200)
-                        return _COLOR_05;
+                        return tp < t ?  _COLOR_ON05START : _COLOR_ON05FINISH;
 
                     average += (((colorPixel.R + colorPixel.B + colorPixel.G) / 3.0) / qnt);
                 }

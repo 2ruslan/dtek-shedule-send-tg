@@ -14,8 +14,8 @@ namespace Common
         
         public static string GetFomatedLine(string patern, string leadingSymbol, int sh, int sm, int fh, int fm)
         {
-            var h = fh - sh;
-
+            var h = fh - sh - (sm == 30 ? 0.5 : 0 ) + (fm == 30 ? 0.5 : 0);
+            
             if (string.IsNullOrEmpty(patern))
                 patern = "<b>    {s} - {f}</b>";
 
@@ -29,8 +29,8 @@ namespace Common
 
             return string.Format(realPatern, 
                     GetFormatedH(sh, sm, leadingSymbol), 
-                    GetFormatedH(fh, fm, leadingSymbol), 
-                    h);
+                    GetFormatedH(fh, fm, leadingSymbol),
+                    string.Format("{0:#.#}",h));
         }
 
         private static string GetFormatedH(int h, int m, string leadingSymbol)
