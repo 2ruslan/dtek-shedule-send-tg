@@ -1,19 +1,74 @@
 ﻿using Common;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System.Text;
+using Tesseract;
 
 namespace DtekSheduleSendTg.DTEK
 {
-    public static class PictureDimensionHelper
+    public static class PictureHelper
     {
         private enum Direction
         {
             left, right, top, bottom
         }
 
-        public static DtekShedulesFromFilePrarms GetParamsFormImage(ILogger loger, Image<Rgba32> img)
+        public static DateOnly GetDate(string file, ILogger logger)
+        {
+            string tesseractDir = Path.Combine(Environment.CurrentDirectory, "WorkDir", "Tesseract");
+
+            try
+            {
+                var image = Image.Load<Rgba32>(file);
+                var dim = GetDataParamsFormImage(logger, image);
+
+                Rectangle cropArea = new Rectangle(dim.StartX, dim.StartY, dim.FinishX - dim.StartX, dim.FinishY - dim.StartY);
+                image.Mutate(x => x.Crop(cropArea));
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    image.Save(ms, new PngEncoder()); 
+                    byte[] imageBytes = ms.ToArray();
+
+                    var engine = new TesseractEngine(tesseractDir, "eng", EngineMode.Default);
+
+                    using (var pix = Pix.LoadFromMemory(imageBytes))
+                    {
+                        using (var page = engine.Process(pix))
+                        {
+                            var str = page.GetText()
+                                            .Trim()
+                                            .Replace(" ", string.Empty)
+                                            .Replace(":", string.Empty)
+                                            .Replace(".", string.Empty)
+                                            .Replace("-", string.Empty)
+                                            ;
+
+                            if (str.Length > 7)
+                            {
+                                return new DateOnly(
+                                    int.Parse(str.Substring(4, 4)),
+                                    int.Parse(str.Substring(2, 2)),
+                                    int.Parse(str.Substring(0, 2))
+                                    );
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "GetDate");
+            }
+
+            return DateOnly.MinValue;
+        }
+
+
+        public static DtekShedulesFromFilePrarms GetGridParamsFormImage(ILogger loger, Image<Rgba32> img)
         {
             var TimeCoord = new List<int>();
             var GroupCoord = new List<int>();
@@ -81,7 +136,29 @@ namespace DtekSheduleSendTg.DTEK
                 TimeCoord = TimeCoord
             };
         }
-       
+
+        public static DtekDateFromFilePrarms GetDataParamsFormImage(ILogger loger, Image<Rgba32> img)
+        {
+            var x = (int)(img.Width * 0.66);
+            var y = 2;
+
+            var topO = GetNext(img, x, y, Direction.bottom);
+            var topI = GetNext(img, topO.x, topO.y, Direction.bottom);
+            var leftTop = GetNext(img, topI.x, topI.y, Direction.left);
+            leftTop = GetNext(img, leftTop.x, leftTop.y, Direction.bottom);
+            var leftBottom = GetNext(img, leftTop.x, leftTop.y, Direction.bottom);
+            var rightBottom = GetNext(img, leftBottom.x, leftBottom.y, Direction.right);
+            rightBottom = GetNext(img, rightBottom.x, rightBottom.y, Direction.right);
+
+            return new DtekDateFromFilePrarms()
+            {
+                StartX = leftTop.x,         // 613
+                StartY = leftTop.y,         // 41
+                FinishX = rightBottom.x,    // 727
+                FinishY = rightBottom.y     // 60
+            };
+        }
+
         private static (int x, int y) GetNext(Image<Rgba32> img, int x, int y, Direction direction)
         {
             var startPixel = img[x, y];

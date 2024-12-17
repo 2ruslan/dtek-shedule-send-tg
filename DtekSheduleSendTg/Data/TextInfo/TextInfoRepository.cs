@@ -9,7 +9,7 @@ namespace DtekSheduleSendTg.Data.TextInfo
         private readonly string LastInfoFile = Path.Combine(Environment.CurrentDirectory, "WorkDir", regionDir, "TextInfo", "LastInfoMessage.txt");
 
         public IEnumerable<TextInfo> GetTextInfo()
-            => JsonSerializer.Deserialize<List<TextInfo>>(File.ReadAllText(InfoFile));
+            => File.Exists(InfoFile) ? JsonSerializer.Deserialize<List<TextInfo>>(File.ReadAllText(InfoFile)) : new List<TextInfo>();
 
         public string GetLastInfoMessage()
             => File.Exists(LastInfoFile) ? File.ReadAllText(LastInfoFile) : string.Empty;

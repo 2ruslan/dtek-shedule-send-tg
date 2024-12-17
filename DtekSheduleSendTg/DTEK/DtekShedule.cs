@@ -107,8 +107,8 @@ namespace DtekSheduleSendTg.DTEK
 
             try
             {
-                var img = Image.Load<Rgba32>(file);
-                var dim = PictureDimensionHelper.GetParamsFormImage(logger, img);
+                var img = SixLabors.ImageSharp.Image.Load<Rgba32>(file);
+                var dim = PictureHelper.GetGridParamsFormImage(logger, img);
                 
                 int group = 1;
                 
@@ -121,7 +121,6 @@ namespace DtekSheduleSendTg.DTEK
                         int average = GetAverage(img, t, g);
                         
                         char sSymbol;
-                        Console.WriteLine(average);
                         
                         if (average == _COLOR_ON05START) 
                             sSymbol = SheduleData._ON_05_START;

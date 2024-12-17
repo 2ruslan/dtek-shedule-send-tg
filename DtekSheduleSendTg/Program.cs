@@ -28,6 +28,11 @@ namespace DtekSheduleSendTg
         private static async Task Main(string[] args)
         {
             logger.LogInformation("-------------------{0}--------------------", DateTime.Now.ToString());
+            /*
+            var dt = PictureHelper.GetDate(args[0], logger);
+            Console.WriteLine(dt);
+            return;
+            */
 
             if (args.Length == 0)
             {

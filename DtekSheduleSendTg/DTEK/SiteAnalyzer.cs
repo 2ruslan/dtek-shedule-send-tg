@@ -28,14 +28,24 @@ namespace DtekSheduleSendTg.DTEK
             foreach (var pictureUrl in pictureUrls)
             {
                 var fileName = siteSource.StorePicFromUrl(pictureUrl.Url);
+                var onDateFromFile = PictureHelper.GetDate(fileName, logger);
+
+                logger.LogInformation("onDateFromFile={0}", onDateFromFile);
+
                 pictureUrl.FileName = fileName;
 
                 var infoFile = $"{fileName}.info";
-                var inf = PIctureFileInfoRepository.GetPIctureFileInfo(infoFile);
-                if (inf != null)
-                    pictureUrl.OnDate = inf.OnDate;
+
+                if (onDateFromFile != DateOnly.MinValue)
+                    pictureUrl.OnDate = onDateFromFile;
                 else
-                    PIctureFileInfoRepository.StorePIctureFileInfo(infoFile, pictureUrl);
+                {
+                    var inf = PIctureFileInfoRepository.GetPIctureFileInfo(infoFile);
+                    if (inf != null)
+                        pictureUrl.OnDate = inf.OnDate;
+                }
+
+                PIctureFileInfoRepository.StorePIctureFileInfo(infoFile, pictureUrl);
             }
 
             result.PIctureFiles = pictureUrls;
@@ -60,7 +70,7 @@ namespace DtekSheduleSendTg.DTEK
                 logger.LogInformation(fileName);
 
                 if (!result.Any(x => string.Equals(x.Url, fileName)))
-                { 
+                {
                     result.Add(
                         new PIctureFileInfo() {
                             Url = fileName,

@@ -1,5 +1,6 @@
 ﻿using Common;
 using Common.Abstraction;
+using Common.Data.ChatInfo;
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.PIctureFileInfo;
 using DtekSheduleSendTg.Data.Shedule;
@@ -10,7 +11,7 @@ using System.Text;
 namespace DtekSheduleSendTg
 {
     public class SvitlobotSender(ILogger loger
-                                , IChatInfoRepository chatInfoRepository
+                                , IList<ChatInfo> chatInfos
                                 , IScheduleWeekRepository scheduleWeekRepository
                                 , IEnumerable<PIctureFileInfo> pIctureFiles
                                 , IDtekShedule dtekShedule
@@ -54,7 +55,7 @@ namespace DtekSheduleSendTg
 
         public async Task Send()
         {
-            const string MonitoringName = "Send2svitlobot";
+            const string MonitoringName = "sent sbt";
             monitoring.CounterRgister(MonitoringName);
 
             loger.LogInformation("SendToSvitlobot Send start");
@@ -62,7 +63,7 @@ namespace DtekSheduleSendTg
             if (IsMondayNoUpdateTime)
                 return;
 
-            foreach (var ci in chatInfoRepository.GetChatInfo())
+            foreach (var ci in chatInfos)
             {
                 if (!string.IsNullOrEmpty(ci.SvitlobotKey) && GroupHelper.Groups.Any( x => x == ci.GroupNum))
                 {

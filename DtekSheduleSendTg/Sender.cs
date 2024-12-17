@@ -45,7 +45,7 @@ namespace DtekSheduleSendTg
 
             monitoring.AddCheckpoint("pic sent");
             
-            await Send2Svitlobot(siteInfo.PIctureFiles);
+            await Send2Svitlobot(chats, siteInfo.PIctureFiles);
 
             monitoring.AddCheckpoint("sbt sent");
             
@@ -54,10 +54,10 @@ namespace DtekSheduleSendTg
             logger.LogInformation("End CheckAndSend");
         }
 
-        private async Task Send2Svitlobot(IEnumerable<PIctureFileInfo> pIctureFileInfos)
+        private async Task Send2Svitlobot(IList<ChatInfo> chats, IEnumerable<PIctureFileInfo> pIctureFileInfos)
         {
             var svitlobotSender = new SvitlobotSender(logger,
-                                                            chatInfoRepository,
+                                                            chats,
                                                             scheduleWeekRepository,
                                                             pIctureFileInfos,
                                                             dtekShedule,
@@ -76,7 +76,7 @@ namespace DtekSheduleSendTg
 
         private async Task SendText(IList<ChatInfo> chats, string message)
         {
-            const string MonitoringName = "Send txt";
+            const string MonitoringName = "sent txt";
             monitoring.CounterRgister(MonitoringName);
 
             logger.LogInformation("Start SendText");
@@ -93,7 +93,7 @@ namespace DtekSheduleSendTg
 
         private async Task SendPicture(IList<ChatInfo> chats, PIctureFileInfo fileInfo)
         {
-            const string MonitoringName = "Send pic";
+            const string MonitoringName = "sent pic";
             monitoring.CounterRgister(MonitoringName);
 
             logger.LogInformation("Start SendPicture");

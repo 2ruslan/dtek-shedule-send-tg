@@ -4,12 +4,38 @@ namespace Common
 {
     public static class TextHelper
     {
+        private static Dictionary<DayOfWeek, string> shortDayOfWeekNames = new Dictionary<DayOfWeek, string>
+        {
+            [DayOfWeek.Monday]      = "Пн",
+            [DayOfWeek.Tuesday]     = "Вт",
+            [DayOfWeek.Wednesday]   = "Ср",
+            [DayOfWeek.Thursday]    = "Чт",
+            [DayOfWeek.Friday]      = "Пт",
+            [DayOfWeek.Saturday]    = "Сб",
+            [DayOfWeek.Sunday]      = "Нд"
+        };
+
+        private static Dictionary<DayOfWeek, string> fullDayOfWeekNames = new Dictionary<DayOfWeek, string>
+        {
+            [DayOfWeek.Monday]      = "Понеділок",
+            [DayOfWeek.Tuesday]     = "Вівторок",
+            [DayOfWeek.Wednesday]   = "Середа",
+            [DayOfWeek.Thursday]    = "Четвер",
+            [DayOfWeek.Friday]      = "П'ятниця",
+            [DayOfWeek.Saturday]    = "Субота",
+            [DayOfWeek.Sunday]      = "Неділя"
+        };
+
         public static string GetFomatedFirstLine(string patern, DateOnly dt)
             => string.Format(patern
                                 .Replace("{d}",  "{0}")
                                 .Replace("{dd}", "{1}")
+                                .Replace("{sdw}","{2}")
+                                .Replace("{fdw}","{3}")
                             , dt.ToString("dd.MM.yyyy")
                             , dt == DateOnly.FromDateTime(DateTime.Now) ? "сьогодні" : "завтра"
+                            , shortDayOfWeekNames[dt.DayOfWeek]
+                            , fullDayOfWeekNames[dt.DayOfWeek]
                 );
         
         public static string GetFomatedLine(string patern, string leadingSymbol, int sh, int sm, int fh, int fm)
