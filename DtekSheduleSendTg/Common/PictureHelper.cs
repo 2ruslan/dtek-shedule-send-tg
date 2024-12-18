@@ -18,12 +18,16 @@ namespace DtekSheduleSendTg.DTEK
 
         public static DateOnly GetDate(string file, ILogger logger)
         {
+            logger.LogInformation(">>>GetDate from file");
+
             string tesseractDir = Path.Combine(Environment.CurrentDirectory, "WorkDir", "Tesseract");
 
             try
             {
                 var image = Image.Load<Rgba32>(file);
                 var dim = GetDataParamsFormImage(logger, image);
+                
+                logger.LogInformation("dim {0} {1} {2} {3}", dim.StartX, dim.StartY, dim.FinishX, dim.FinishY);
 
                 Rectangle cropArea = new Rectangle(dim.StartX, dim.StartY, dim.FinishX - dim.StartX, dim.FinishY - dim.StartY);
                 image.Mutate(x => x.Crop(cropArea));
@@ -46,6 +50,7 @@ namespace DtekSheduleSendTg.DTEK
                                             .Replace(".", string.Empty)
                                             .Replace("-", string.Empty)
                                             ;
+                            logger.LogInformation("str {0}", str);
 
                             if (str.Length > 7)
                             {

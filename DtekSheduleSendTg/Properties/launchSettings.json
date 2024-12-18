@@ -2,7 +2,7 @@
   "profiles": {
     "dtek-shedule-send-tg": {
       "commandName": "Project",
-      "commandLineArgs": "Dnipro"
+      "commandLineArgs": "Kyiv"
     },
     "Docker": {
       "commandName": "Docker"

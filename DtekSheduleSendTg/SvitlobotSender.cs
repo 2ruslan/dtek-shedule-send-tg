@@ -119,11 +119,8 @@ namespace DtekSheduleSendTg
                 scheduleWeek.Schedules.Add(daySchedule = new ScheduleWeekDay() { GroupNum = group, DayOfWeek = normalDayOfWeek });
 
             var newSchedule = schedule
-                                 // .Replace('0', 'x')
-                                 // .Replace('1', '0')
-                                 // .Replace('x', '1')
-                                  .Replace(SheduleData._ON_05_END, '1')
-                                  .Replace(SheduleData._ON_05_START, '1')
+                                  .Replace(SheduleData._ON_05_END, '2')
+                                  .Replace(SheduleData._ON_05_START, '3')
                                   ;
 
             daySchedule.IsChaged = !string.Equals(daySchedule.SheduleString, newSchedule);
