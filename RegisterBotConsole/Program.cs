@@ -88,6 +88,16 @@ async Task HandleUpdateAsync(ITelegramBotClient botClient, Telegram.Bot.Types.Up
 
                 return;
             }
+            else if (message.ForwardFromChat?.Id is not null)
+            {
+                await bot.SendMessage(message.Chat.Id, $"id: {message.ForwardFromChat.Id} \r\nname: {message.ForwardFromChat.Username}\r\ntitle: {message.ForwardFromChat.Title}");
+                return;
+            }
+            else if (string.IsNullOrEmpty(message?.Text))
+            {
+                await bot.SendMessage(message.Chat.Id, "Нічого ніпонятно, но дуже інтересно. Для коректної роботи рекомендую почитати інструкцію, яку можна отримати написавши help цьому ботові. Повідомлення з командами ,бажано, не копіювати а писати рукаами. Якщо і копіювати то з блокноту, з телеграму може непрацювати.");
+                return;
+            }
             else if (message.Text.ToLower().EndsWith("start") || message.Text.ToLower().EndsWith("help") || message.Text.ToLower().Equals("?"))
             {
                 var startMessage = new StartMessage(workDir);
@@ -173,6 +183,9 @@ async Task<string> HandleMessage(Telegram.Bot.Types.Message msg)
         if (paresrResult.IsSendTextMessage.HasValue)
             chatSettings.IsSendTextMessage = paresrResult.IsSendTextMessage.Value;
 
+        if (paresrResult.IsSendTextMessageWhenNoPict.HasValue)
+            chatSettings.IsSendTextMessageWhenNoPict = paresrResult.IsSendTextMessageWhenNoPict.Value;
+        
         if (paresrResult.IsNoSendPictureDescription.HasValue)
             chatSettings.IsNoSendPictureDescription = paresrResult.IsNoSendPictureDescription.Value;
 

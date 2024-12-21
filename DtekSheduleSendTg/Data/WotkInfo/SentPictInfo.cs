@@ -1,6 +1,6 @@
 ﻿namespace DtekSheduleSendTg.Data.WotkInfo
 {
-    public record SendedPictInfo
+    public record SentPictInfo
     {
         public int MsgId { get; set; }
         public DateTime SendDt { get; set; }

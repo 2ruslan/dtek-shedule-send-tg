@@ -9,6 +9,7 @@
        
         public bool IsDeletePrevMessage { get; set; }
         public bool IsSendTextMessage { get; set; }
+        public bool IsSendTextMessageWhenNoPict { get; set; }
 
         public bool IsNoSendPictureDescription { get; set; }
 

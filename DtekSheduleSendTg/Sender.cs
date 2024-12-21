@@ -6,6 +6,7 @@ using DtekSheduleSendTg.Data.PIctureFileInfo;
 using DtekSheduleSendTg.Data.WotkInfo;
 using Microsoft.Extensions.Logging;
 using System.Data;
+using System.IO;
 
 namespace DtekSheduleSendTg
 {
@@ -35,7 +36,7 @@ namespace DtekSheduleSendTg
             monitoring.AddCheckpoint("src&pase");
 
             if (!string.IsNullOrEmpty(siteInfo.Text))
-                await SendText(chats, siteInfo.Text);
+                await SendText(chats, siteInfo.Text, siteInfo.PIctureFiles.Any());
 
             monitoring.AddCheckpoint("txt sent");
 
@@ -74,19 +75,69 @@ namespace DtekSheduleSendTg
             }
         }
 
-        private async Task SendText(IList<ChatInfo> chats, string message)
+        private async Task SendText(IList<ChatInfo> chats, string message, bool existPict)
         {
             const string MonitoringName = "sent txt";
             monitoring.CounterRgister(MonitoringName);
 
             logger.LogInformation("Start SendText");
 
+            var workInfo = workInfoRepository.GetWorkInfo();
+
             foreach (var chat in chats)
-                if (chat.IsSendTextMessage)
+            {
+                var sendedTxtInfo = workInfo.SendedTxtInfo.ContainsKey(chat.Id)
+                            ? workInfo.SendedTxtInfo[chat.Id]
+                            : (workInfo.SendedTxtInfo[chat.Id] = new());
+
+                if (chat.IsSendTextMessage || 
+                    (!existPict && chat.IsSendTextMessageWhenNoPict 
+                     && DateTime.Now.Hour > 2 && DateTime.Now.Hour < 23
+                    ))
                 {
-                    await bot.SendText(chat.Id, message);
-                    monitoring.Counter(MonitoringName);
+                    bool IsNeedSendPict = !sendedTxtInfo.Any(x =>
+                                                string.Equals(message.DeleteWhiteSpace(),
+                                                                x.Text.DeleteWhiteSpace(),
+                                                                StringComparison.InvariantCultureIgnoreCase)
+                                                );
+                    int id = -1;
+                    if (IsNeedSendPict)
+                    {
+                        id = await bot.SendText(chat.Id, message);
+                        monitoring.Counter(MonitoringName);
+
+                        sendedTxtInfo.Add(
+                                new SentTxtInfo()
+                                {
+                                    MsgId = id,
+                                    SendDt = DateOnly.FromDateTime(DateTime.Now),
+                                    Text = message
+                                });
+
+                        try
+                        {
+                            logger.LogInformation("Delete Old txt chatid = {0}", chat.Id);
+
+                            var msgIdsForDelete = sendedTxtInfo
+                                .Where(x => x.MsgId != id)
+                                .Select(x => x.MsgId)
+                                .ToArray();
+                            foreach (var delMsgId in msgIdsForDelete)
+                            {
+                                if (chat.IsDeletePrevMessage)
+                                    await bot.DeleteMessage(chat.Id, delMsgId);
+                                sendedTxtInfo.Remove(sendedTxtInfo.Find(x => x.MsgId == delMsgId));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Error 2 SendPicture to {0}", chat.Id);
+                        }
+                    }
                 }
+            }
+
+            workInfoRepository.StoreWorkInfo(workInfo);
 
             logger.LogInformation("End SendText");
         }
@@ -110,15 +161,15 @@ namespace DtekSheduleSendTg
                             ? workInfo.SendedPictInfo[chat.Id]
                             : (workInfo.SendedPictInfo[chat.Id] = new());
 
-                bool IsSendPict = !sendedPictInfo.Exists(x => string.Equals(x.FileName, fileInfo.FileName));
+                bool IsNeedSendPict = !sendedPictInfo.Exists(x => string.Equals(x.FileName, fileInfo.FileName));
 
-                if (IsSendPict && chat.IsSendWhenPictChanged)
+                if (IsNeedSendPict && chat.IsSendWhenPictChanged)
                 {
                     var prevInfo = GetInfoOnDate(sendedPictInfo, fileInfo.OnDate);
-                    IsSendPict = prevInfo is null || !string.Equals(prevInfo.ScheduleString, currentSh);
+                    IsNeedSendPict = prevInfo is null || !string.Equals(prevInfo.ScheduleString, currentSh);
                 }
 
-                if (IsSendPict)
+                if (IsNeedSendPict)
                 {
                     try
                     {
@@ -132,7 +183,7 @@ namespace DtekSheduleSendTg
                         var id = await bot.SendPicture(chat.Id, fileInfo.FileName, description);
 
                         sendedPictInfo.Add(
-                                new SendedPictInfo()
+                                new SentPictInfo()
                                 {
                                     MsgId = id,
                                     SendDt = DateTime.Now,
@@ -172,7 +223,7 @@ namespace DtekSheduleSendTg
             logger.LogInformation("End SendPicture");
         }
 
-        private IEnumerable<int> GetMsgIdForDelete(List<SendedPictInfo> sendedPictInfos)
+        private IEnumerable<int> GetMsgIdForDelete(List<SentPictInfo> sendedPictInfos)
         {
             var activeMsgs = sendedPictInfos
                             .Where(x => x.OnDate >= DateOnly.FromDateTime(DateTime.Now))
@@ -193,7 +244,7 @@ namespace DtekSheduleSendTg
             return delMsgs.ToArray();
         }
 
-        private static SendedPictInfo GetInfoOnDate(List<SendedPictInfo> sendedPictInfos, DateOnly onDt)
+        private static SentPictInfo GetInfoOnDate(List<SentPictInfo> sendedPictInfos, DateOnly onDt)
         {
             var lastMsgId = sendedPictInfos
                                 .Where(x => x.OnDate == onDt)

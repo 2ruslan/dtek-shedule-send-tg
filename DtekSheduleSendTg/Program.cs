@@ -1,5 +1,4 @@
 ﻿using DtekSheduleSendTg.Data.ChatInfo;
-using DtekSheduleSendTg.Data.TextInfo;
 using DtekSheduleSendTg.Data.WotkInfo;
 using DtekSheduleSendTg.DTEK;
 using Microsoft.Extensions.Logging;
@@ -54,13 +53,12 @@ namespace DtekSheduleSendTg
             var shedilePicRegex = GetRegionConfigValue("SchedulePicRegex", region); 
 
             var chatInfoRepository = new ChatInfoRepositoryApp(region);
-            var textInfoRepository = new TextInfoRepository(region);
             var workInfoRepository = new WorkInfoRepository(region);
             var scheduleWeekRepository = new ScheduleWeekRepository(region);
 
             var siteSource = new SiteSource(logger, site, region);
 
-            var siteAnalyzer = new SiteAnalyzer(logger, textInfoRepository, siteSource, shedilePicRegex);
+            var siteAnalyzer = new SiteAnalyzer(logger, siteSource, shedilePicRegex);
             
 
             var bot = new TelegramBot(logger, botToken);

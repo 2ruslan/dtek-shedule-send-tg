@@ -38,8 +38,12 @@ namespace DtekSheduleSendTg
             foreach(var itm in  scheduleWeek.Schedules)
                 itm.IsChaged = false;
 
-           // if (DateTime.Now.DayOfWeek == DayOfWeek.Monday && scheduleWeek.Schedules.Count > 0)
-           //     scheduleWeek.Schedules.Clear();
+            if (DateTime.Now.DayOfWeek == DayOfWeek.Monday 
+                && scheduleWeek.Schedules
+                                .Where(x => x.DayOfWeek > 1)
+                                .Select(x => x.DayOfWeek)
+                                .Any())
+                scheduleWeek.Schedules.Clear();
 
             foreach (var fi in pIctureFiles)
             {

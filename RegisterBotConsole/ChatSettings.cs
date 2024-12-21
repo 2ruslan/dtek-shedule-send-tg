@@ -58,6 +58,12 @@ namespace RegisterBotConsole
             set { chat.IsSendTextMessage = value; }
         }
 
+        public bool IsSendTextMessageWhenNoPict
+        {
+            get { return chat.IsSendTextMessageWhenNoPict; }
+            set { chat.IsSendTextMessageWhenNoPict = value; }
+        }
+        
         public bool IsNoSendPictureDescription
         {
             get { return chat.IsNoSendPictureDescription; }

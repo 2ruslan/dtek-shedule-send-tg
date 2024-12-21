@@ -7,7 +7,6 @@ using System.Text.RegularExpressions;
 namespace DtekSheduleSendTg.DTEK
 {
     public class SiteAnalyzer(  ILogger logger, 
-                                ITextInfoRepository repository, 
                                 ISiteSource siteSource, 
                                 string shedilePicRegex) : ISiteAnalyzer
     {
@@ -87,39 +86,35 @@ namespace DtekSheduleSendTg.DTEK
 
         private string GetInfoText(string source)
         {
+            const string StartDiv = "<div class=\"m-attention__text\">";
             logger.LogInformation("start GetInfoText");
-
-            var infoTexts = repository.GetTextInfo();
-            var lastMessage = repository.GetLastInfoMessage();
-            logger.LogInformation("GetInfoText lastMessage : [{0}]", lastMessage);
 
             try
             {
-                foreach(var textInfo in infoTexts)
+                var startPos = source.IndexOf(StartDiv);
+                if (startPos > -1)
                 {
-                    var m = Regex.Match(source, textInfo.Regex);
 
-                    if (m != null)
+                    var endPos =
+                        (new List<int>() {
+                                source.IndexOf(@"<br />", startPos),
+                                source.IndexOf(@"<br/>", startPos),
+                                source.IndexOf(@"</div>", startPos),
+                                source.IndexOf("</p>", startPos)
+                        })
+                        .Where(x => x > startPos)
+                        .Min();
+
+                    if (endPos > -1)
                     {
-                        logger.LogInformation("GetInfoText currentMessage : [{0}]", m.Value);
+                        var result = source
+                            .Substring(startPos, endPos - startPos)
+                            .Replace(StartDiv, string.Empty)
+                            .DeleteAllTags();
 
-                        if (string.IsNullOrEmpty(m.Value))
-                            return string.Empty;
-
-                        if (string.Equals(m.Value.DeleteAllTags().DeleteWhiteSpace(), 
-                                          lastMessage.DeleteAllTags().DeleteWhiteSpace(), 
-                                          StringComparison.InvariantCultureIgnoreCase))
-                            return string.Empty;
-                                                
-                        repository.StoreLastInfoMessage(m.Value);
-
-                        var message = textInfo.Message != "*"
-                            ? textInfo.Message
-                            : m.Value
-                           ;
-
-                        return message;
+                        return result;
                     }
+
                 }
             }
             catch (Exception ex)

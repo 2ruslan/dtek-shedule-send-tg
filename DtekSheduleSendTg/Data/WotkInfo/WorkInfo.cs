@@ -2,8 +2,9 @@
 {
     public record class WorkInfo
     {
-        public Dictionary<long, int> LastPictureMessagesId { get; set; } = new();
+        public Dictionary<long, List<SentPictInfo>> SendedPictInfo { get; set; } = new();
 
-        public Dictionary<long, List<SendedPictInfo>> SendedPictInfo { get; set; } = new();
+        public Dictionary<long, List<SentTxtInfo>> SendedTxtInfo { get; set; } = new();
+        
     }
 }

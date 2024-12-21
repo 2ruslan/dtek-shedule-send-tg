@@ -10,6 +10,7 @@ namespace RegisterBotConsole
 
         const string DelOldCommand = "+delold";
         const string AddTextCommand = "+addtext";
+        const string AddTextWhenNoPicCommand = "+addtxtnp";
         const string PictureOnlyCommand = "+piconly";
         const string SendWhenScheduleChandedComand = "+nshonly";
 
@@ -94,6 +95,7 @@ namespace RegisterBotConsole
             #region  addCommands
             result.IsDeletePrevMessage = (message ?? string.Empty).Contains(DelOldCommand);
             result.IsSendTextMessage = (message ?? string.Empty).Contains(AddTextCommand);
+            result.IsSendTextMessageWhenNoPict = (message ?? string.Empty).Contains(AddTextWhenNoPicCommand);
             result.IsNoSendPictureDescription = (message ?? string.Empty).Contains(PictureOnlyCommand);
             result.IsSendWhenChanged = (message ?? string.Empty).Contains(SendWhenScheduleChandedComand);
             #endregion  addCommands
