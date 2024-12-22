@@ -2,6 +2,7 @@
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.PIctureFileInfo;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DtekSheduleSendTg.DTEK
@@ -112,7 +113,8 @@ namespace DtekSheduleSendTg.DTEK
                             .Replace(StartDiv, string.Empty)
                             .DeleteAllTags();
 
-                        return result;
+                        if (result.Contains("відключення")) 
+                            return result;
                     }
 
                 }
