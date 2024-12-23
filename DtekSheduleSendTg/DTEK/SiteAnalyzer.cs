@@ -2,7 +2,6 @@
 using DtekSheduleSendTg.Abstraction;
 using DtekSheduleSendTg.Data.PIctureFileInfo;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace DtekSheduleSendTg.DTEK
@@ -98,8 +97,7 @@ namespace DtekSheduleSendTg.DTEK
 
                     var endPos =
                         (new List<int>() {
-                                source.IndexOf(@"<br />", startPos),
-                                source.IndexOf(@"<br/>", startPos),
+                                source.IndexOf(@"<br", startPos),
                                 source.IndexOf(@"</div>", startPos),
                                 source.IndexOf("</p>", startPos)
                         })
@@ -110,13 +108,19 @@ namespace DtekSheduleSendTg.DTEK
                     {
                         var result = source
                             .Substring(startPos, endPos - startPos)
-                            .Replace(StartDiv, string.Empty)
-                            .DeleteAllTags();
+                            //.Replace(StartDiv, string.Empty)
+                            .DeleteAllTags()
+                            ;
 
-                        if (result.Contains("відключення")) 
+                        if (result.Contains("відключення")    ||
+                                result.Contains("стабілізац") ||
+                                result.Contains("екстрен")    ||
+                                result.Contains("отримувал")  ||
+                                result.Contains(DateTime.Now.Day.ToString()) ||
+                                result.Contains((DateTime.Now.Day + 1).ToString())
+                                )
                             return result;
                     }
-
                 }
             }
             catch (Exception ex)

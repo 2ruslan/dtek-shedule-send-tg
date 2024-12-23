@@ -83,7 +83,7 @@ namespace DtekSheduleSendTg
                         for (int i = 1; i < 8; i++)
                             sb.AppendFormat("{0}%3B", grpSchedules.FirstOrDefault(x => x.DayOfWeek == i)?.SheduleString ?? emptyDaySchedule);
 
-                        await SendToSvitlobot(ci.SvitlobotKey, sb.ToString());
+                        await SendToSvitlobot(ci.SvitlobotKey, sb.ToString(), ci.GroupNum);
 
                         monitoring.Counter(MonitoringName);
                     }
@@ -93,22 +93,42 @@ namespace DtekSheduleSendTg
             loger.LogInformation("SendToSvitlobot Send end");
         }
 
-        private async Task SendToSvitlobot(string key, string schedules)
+        private async Task SendToSvitlobot(string key, string schedules, string group)
         {
+            loger.LogInformation("SendToSvitlobot {0} {1} {2}", group, key, schedules);
+
+            var client = new HttpClient();
+
             try
             {
-                string url = $"https://api.svitlobot.in.ua/website/timetableEditEvent?&channel_key={key}&timetableData={schedules}";
-                
-                loger.LogInformation("SendToSvitlobot {0} {1}", key, schedules);
+                if (GroupHelper.SvitlobotGroupMaps.ContainsKey(group))
+                {
+                    Thread.Sleep(50);
 
-                var client = new HttpClient();
-                await client.GetAsync(url);
-                Thread.Sleep(300);
+                    var grp = GroupHelper.SvitlobotGroupMaps[group];
+                    string urlGroup = $"https://api.svitlobot.in.ua/website/setChannelTimetable?channel_key={key}&timetable_id={grp}";
+                    var resultGrp = await client.GetAsync(urlGroup);
+                    loger.LogInformation("SendToSvitlobot set group result code ={0}", resultGrp.StatusCode);
+                }
             }
             catch (Exception e)
             {
-                loger.LogError(e, "send to svitlobot");
+                loger.LogError(e, "send group to svitlobot");
             }
+
+            try
+            {
+                Thread.Sleep(50);
+
+                string urlSchedules = $"https://api.svitlobot.in.ua/website/timetableEditEvent?&channel_key={key}&timetableData={schedules}";
+                var resultSch = await client.GetAsync(urlSchedules);
+                loger.LogInformation("SendToSvitlobot set schedule result code ={0}", resultSch.StatusCode);
+            }
+            catch (Exception e)
+            {
+                loger.LogError(e, "send schedule to svitlobot");
+            }
+
         }
 
         private void SetShedule(string group, DateOnly date, string schedule)
