@@ -45,11 +45,17 @@ namespace DtekSheduleSendTg
                                 .Any())
                 scheduleWeek.Schedules.Clear();
 
-            foreach (var fi in pIctureFiles)
+            var fi = pIctureFiles.LastOrDefault();
+            if (fi != null)
             {
                 dtekShedule.AnalyzeFile(fi.FileName);
                 foreach(var g in GroupHelper.Groups)
                     SetShedule(g, fi.OnDate, dtekShedule.GetSchedule(g));
+            }
+            else
+            {
+                foreach (var g in GroupHelper.Groups)
+                    SetShedule(g, DateOnly.FromDateTime(DateTime.Now), emptyDaySchedule);
             }
 
             scheduleWeekRepository.StoreSchedules(scheduleWeek);
