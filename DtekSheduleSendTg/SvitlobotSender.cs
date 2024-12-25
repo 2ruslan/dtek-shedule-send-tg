@@ -111,17 +111,16 @@ namespace DtekSheduleSendTg
                 {
                     Thread.Sleep(50);
 
-                    var grp = GroupHelper.SvitlobotGroupMaps[group];
-                    string urlGroup = $"https://api.svitlobot.in.ua/website/setChannelTimetable?channel_key={key}&timetable_id={grp}";
+                    string urlGroup = $"https://api.svitlobot.in.ua/website/removeChannelTimetable?channel_key={key}";
                     var resultGrp = await client.GetAsync(urlGroup);
-                    loger.LogInformation("SendToSvitlobot set group result code ={0}", resultGrp.StatusCode);
+                    loger.LogInformation("SendToSvitlobot removeChannelTimetable code ={0}", resultGrp.StatusCode);
                 }
             }
             catch (Exception e)
             {
-                loger.LogError(e, "send group to svitlobot");
+                loger.LogError(e, "removeChannelTimetable");
             }
-
+        
             try
             {
                 Thread.Sleep(50);

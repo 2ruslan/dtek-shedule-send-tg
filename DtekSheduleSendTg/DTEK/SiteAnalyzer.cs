@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 namespace DtekSheduleSendTg.DTEK
 {
     public class SiteAnalyzer(  ILogger logger, 
+                                IMonitoring monitoring,
                                 ISiteSource siteSource, 
                                 string shedilePicRegex) : ISiteAnalyzer
     {
@@ -27,7 +28,7 @@ namespace DtekSheduleSendTg.DTEK
             foreach (var pictureUrl in pictureUrls)
             {
                 var fileName = siteSource.StorePicFromUrl(pictureUrl.Url);
-                var onDateFromFile = PictureHelper.GetDate(fileName, logger);
+                var onDateFromFile = PictureHelper.GetDate(fileName, logger, monitoring);
 
                 logger.LogInformation("onDateFromFile={0}", onDateFromFile);
 

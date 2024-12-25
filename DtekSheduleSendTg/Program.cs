@@ -50,7 +50,10 @@ namespace DtekSheduleSendTg
 
             // region config value
             var site = GetRegionConfigValue("Site", region);
-            var shedilePicRegex = GetRegionConfigValue("SchedulePicRegex", region); 
+            var shedilePicRegex = GetRegionConfigValue("SchedulePicRegex", region);
+
+
+            var monitoring = new Monitoring2Txt($"  --=  {region}  =--  ");
 
             var chatInfoRepository = new ChatInfoRepositoryApp(region);
             var workInfoRepository = new WorkInfoRepository(region);
@@ -58,9 +61,8 @@ namespace DtekSheduleSendTg
 
             var siteSource = new SiteSource(logger, site, region);
 
-            var siteAnalyzer = new SiteAnalyzer(logger, siteSource, shedilePicRegex);
+            var siteAnalyzer = new SiteAnalyzer(logger, monitoring, siteSource, shedilePicRegex);
             
-
             var bot = new TelegramBot(logger, botToken);
             var dtekShedule = new DtekShedule(logger);
 
@@ -71,7 +73,7 @@ namespace DtekSheduleSendTg
             return;
             */
 
-            var monitoring = new Monitoring2Txt($"  --=  {region}  =--  ");
+            
 
             var sender = new Sender(logger, 
                                     siteAnalyzer, 

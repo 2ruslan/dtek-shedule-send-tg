@@ -1,4 +1,5 @@
 ﻿using Common;
+using DtekSheduleSendTg.Abstraction;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
@@ -16,7 +17,7 @@ namespace DtekSheduleSendTg.DTEK
             left, right, top, bottom
         }
 
-        public static DateOnly GetDate(string file, ILogger logger)
+        public static DateOnly GetDate(string file, ILogger logger, IMonitoring monitoring)
         {
             logger.LogInformation(">>>GetDate from file");
 
@@ -51,14 +52,19 @@ namespace DtekSheduleSendTg.DTEK
                                             .Replace("-", string.Empty)
                                             ;
                             logger.LogInformation("str {0}", str);
+                            
+                            monitoring.Append("parsed dt", str);
 
                             if (str.Length > 7)
                             {
-                                return new DateOnly(
-                                    int.Parse(str.Substring(4, 4)),
-                                    int.Parse(str.Substring(2, 2)),
-                                    int.Parse(str.Substring(0, 2))
-                                    );
+                                var candidateDT = new DateTime(
+                                                int.Parse(str.Substring(4, 4)),
+                                                int.Parse(str.Substring(2, 2)),
+                                                int.Parse(str.Substring(0, 2))
+                                                );
+
+                                if (Math.Abs((candidateDT - DateTime.Now).TotalDays) < 3)
+                                    return DateOnly.FromDateTime(candidateDT);
                             }
                         }
                     }
@@ -151,16 +157,16 @@ namespace DtekSheduleSendTg.DTEK
             var topI = GetNext(img, topO.x, topO.y, Direction.bottom);
             var leftTop = GetNext(img, topI.x, topI.y, Direction.left);
             leftTop = GetNext(img, leftTop.x, leftTop.y, Direction.bottom);
-            var leftBottom = GetNext(img, leftTop.x, leftTop.y, Direction.bottom);
-            var rightBottom = GetNext(img, leftBottom.x, leftBottom.y, Direction.right);
-            rightBottom = GetNext(img, rightBottom.x, rightBottom.y, Direction.right);
+           // var leftBottom = GetNext(img, leftTop.x, leftTop.y, Direction.bottom);
+           // var rightBottom = GetNext(img, leftBottom.x, leftBottom.y, Direction.right);
+           // rightBottom = GetNext(img, rightBottom.x, rightBottom.y, Direction.right);
 
             return new DtekDateFromFilePrarms()
             {
                 StartX = leftTop.x,         // 613
                 StartY = leftTop.y,         // 41
-                FinishX = rightBottom.x,    // 727
-                FinishY = rightBottom.y     // 60
+                FinishX = leftTop.x + 110,  // 727
+                FinishY = leftTop.y + 30    // 60
             };
         }
 
