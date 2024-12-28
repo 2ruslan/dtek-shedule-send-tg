@@ -43,28 +43,10 @@
     <None Update="WorkDir\Odesa\Chats\ChatInfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WorkDir\Odesa\Shedule\SheduleLast.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="WorkDir\Odesa\TextInfo\Messages.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="WorkDir\KyivRegion\Chats\ChatInfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="WorkDir\KyivRegion\Shedule\SheduleLast.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="WorkDir\KyivRegion\TextInfo\Messages.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="WorkDir\Kyiv\Chats\ChatInfo.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="WorkDir\Kyiv\Shedule\SheduleLast.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="WorkDir\Kyiv\TextInfo\Messages.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="WorkDir\Tesseract\eng.traineddata">

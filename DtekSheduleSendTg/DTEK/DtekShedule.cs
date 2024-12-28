@@ -108,7 +108,11 @@ namespace DtekSheduleSendTg.DTEK
             try
             {
                 var img = SixLabors.ImageSharp.Image.Load<Rgba32>(file);
-                var dim = PictureHelper.GetGridParamsFormImage(logger, img);
+
+                var imgP = PictureHelper.ApplyGammaCorrection(img, 15);
+                imgP = PictureHelper.ConvertToBlackAndWhite(imgP);
+                //imgP.Save(@"c:\temp\123.jpg");
+                var dim = PictureHelper.GetGridParamsFormImage(logger, imgP);
                 
                 int group = 1;
                 

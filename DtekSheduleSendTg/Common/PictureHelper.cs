@@ -91,25 +91,31 @@ namespace DtekSheduleSendTg.DTEK
 
             var leftBorder = GetNext(img, x, y, Direction.right);
 
-            var nextB = GetNext(img, leftBorder.x + 10, leftBorder.y, Direction.bottom);
-            var prevB = GetNext(img, leftBorder.x + 10, leftBorder.y, Direction.top);
+            var firstG = (x: leftBorder.x + 10, y: leftBorder.y);
+            for (int i = 0; i < 11; i++)
+                firstG = GetNext(img, firstG.x, firstG.y, Direction.top);
 
-            var yStep = nextB.y - prevB.y;
-            var yStart = prevB.y - (yStep * 5) + (yStep / 2);
+            var lastG = (x: firstG.x, y: firstG.y);
+            for (int i = 0; i < 12; i++)
+            {
+                lastG = GetNext(img, lastG.x, lastG.y, Direction.bottom);
+                var start = lastG.y;
+                lastG = GetNext(img, lastG.x, lastG.y, Direction.bottom);
+                var p = start + (lastG.y - start) / 2;
+                GroupCoord.Add(p);
+            }
 
-            for (int i = 0; i < GroupHelper.Groups.Length; i++)
-                GroupCoord.Add(yStart + (i * yStep));
 
             // ----------------------------- x (group)
             x = img.Width - 1;
-            y = yStart;
+            y = GroupCoord[0];
 
             var rightBorderBe = GetNext(img, x, y, Direction.left);
 
             var topCaptBorder = GetNext(img, rightBorderBe.x, rightBorderBe.y, Direction.top);
             var topBorderBs = GetNext(img, topCaptBorder.x - 5, topCaptBorder.y, Direction.bottom);
 
-            var tlast = GetNext(img, topBorderBs.x, topBorderBs.y - 2, Direction.left);
+            var tlast = GetNext(img, topBorderBs.x, topBorderBs.y - 4, Direction.left);
             var first = (tlast.x, tlast.y);
 
             for (int i = 0; i < 46; i++)
@@ -121,6 +127,9 @@ namespace DtekSheduleSendTg.DTEK
                 var start = first.x;
                 first = GetNext(img, first.x, first.y, Direction.right);
                 var p = start + (first.x - start) / 2;
+                
+           //     Console.WriteLine($"----------------------- {p}");
+
                 TimeCoord.Add(p);
             }
 
@@ -176,7 +185,7 @@ namespace DtekSheduleSendTg.DTEK
             var startAvg = (int)Math.Round(.299 * startPixel.R + .587 * startPixel.G + .114 * startPixel.B); 
 
             var nextAvg = startAvg;
-            while (Math.Abs(nextAvg - startAvg) < 15)
+            while (Math.Abs(nextAvg - startAvg) < 30)
             {
                 switch (direction)
                 {
@@ -192,11 +201,64 @@ namespace DtekSheduleSendTg.DTEK
 
                 nextAvg = (int)Math.Round(.299 * nextPixel.R + .587 * nextPixel.G + .114 * nextPixel.B);
 
-              //  Console.WriteLine($"{nextAvg} {startAvg}"); 
+              //  Console.WriteLine($"{nextAvg - startAvg}"); 
             }
 
             return (x, y);
         }
 
+
+        public static Image<Rgba32> ApplyGammaCorrection(Image<Rgba32> original, double gamma)
+        {
+            if (gamma <= 0)
+                throw new ArgumentOutOfRangeException(nameof(gamma), "Gamma must be greater than 0.");
+
+            var correctedImage = new Image<Rgba32>(original.Width, original.Height);
+
+            byte[] gammaCorrectionTable = new byte[256];
+            for (int i = 0; i < 256; i++)
+            {
+                gammaCorrectionTable[i] = (byte)Math.Min(255, (int)(255 * Math.Pow(i / 255.0, gamma)));
+            }
+
+            for (int y = 0; y < original.Height; y++)
+            {
+                for (int x = 0; x < original.Width; x++)
+                {
+                    var originalColor = original[x, y];
+
+                    var correctedColor = Color.FromRgb(
+                        gammaCorrectionTable[originalColor.R],
+                        gammaCorrectionTable[originalColor.G],
+                        gammaCorrectionTable[originalColor.B]
+                    );
+
+                    correctedImage[x, y] = correctedColor;
+                }
+            }
+
+            return correctedImage;
+        }
+
+        public static Image<Rgba32> ConvertToBlackAndWhite(Image<Rgba32> originalImage)
+        {
+            var blackAndWhiteImage = new Image<Rgba32>(originalImage.Width, originalImage.Height);
+
+            for (int y = 0; y < originalImage.Height; y++)
+            {
+                for (int x = 0; x < originalImage.Width; x++)
+                {
+                    var originalColor = originalImage[x, y];
+
+                    int brightness = (originalColor.R + originalColor.G + originalColor.B) / 3;
+
+                    var newColor = brightness < 100 ? Color.Black : Color.White;
+
+                    blackAndWhiteImage[x, y] = newColor;
+                }
+            }
+
+            return blackAndWhiteImage;
+        }
     }
 }
